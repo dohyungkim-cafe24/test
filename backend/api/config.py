@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     # Frontend
     frontend_url: str = "http://localhost:3000"
 
+    # OpenAI
+    openai_api_key: str = ""
+
     @property
     def is_production(self) -> bool:
         """Check if running in production."""

@@ -45,6 +45,7 @@ import {
   BodySpecsError,
   ExperienceLevel,
   getPrefillSpecs,
+  runAnalysis,
   Stance,
   submitBodySpecs,
 } from '@/lib/body-specs';
@@ -294,6 +295,9 @@ export default function BodySpecsPage() {
     return !heightError && !weightError;
   }, [heightValue, weightValue, experience, stance, validateHeight, validateWeight]);
 
+  // Submission status message
+  const [submitStatus, setSubmitStatus] = useState<string>('');
+
   // Handle form submission
   const handleSubmit = useCallback(async () => {
     if (!accessToken) return;
@@ -318,6 +322,8 @@ export default function BodySpecsPage() {
     setErrorMessage(null);
 
     try {
+      // Step 1: Save body specs
+      setSubmitStatus('Saving profile... / 프로필 저장 중...');
       await submitBodySpecs(accessToken, videoId, {
         height_cm: Math.round(parseFloat(heightValue)),
         weight_kg: Math.round(parseFloat(weightValue)),
@@ -325,17 +331,22 @@ export default function BodySpecsPage() {
         stance: stance as Stance,
       });
 
-      // Navigate to dashboard (skip processing - not implemented)
-      router.push('/dashboard');
+      // Step 2: Run analysis (this may take 30-60 seconds)
+      setSubmitStatus('Analyzing your video... / 영상 분석 중... (30-60초 소요)');
+      const analysisResult = await runAnalysis(accessToken, videoId);
+
+      // Step 3: Navigate to report page
+      router.push(`/report/${analysisResult.report_id}`);
     } catch (error) {
       if (error instanceof BodySpecsError) {
         setErrorMessage(error.message);
       } else {
-        setErrorMessage('Failed to save body specs. Please try again.');
+        setErrorMessage('Failed to analyze. Please try again. / 분석에 실패했습니다. 다시 시도해 주세요.');
       }
       setShowError(true);
     } finally {
       setIsSubmitting(false);
+      setSubmitStatus('');
     }
   }, [accessToken, videoId, heightValue, weightValue, experience, stance, validateAll, fieldErrors, router]);
 
@@ -520,7 +531,7 @@ export default function BodySpecsPage() {
             }
             sx={{ mt: 2 }}
           >
-            {isSubmitting ? 'Saving... / 저장 중...' : 'Start Analysis / 분석 시작'}
+            {isSubmitting ? (submitStatus || 'Processing... / 처리 중...') : 'Start Analysis / 분석 시작'}
           </Button>
         </Box>
       )}

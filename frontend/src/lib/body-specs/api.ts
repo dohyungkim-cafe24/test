@@ -146,3 +146,58 @@ export async function getPrefillSpecs(
 
   return response.json();
 }
+
+/** Response from running analysis */
+export interface AnalysisResponse {
+  report_id: string;
+  video_id: string;
+  performance_score: number;
+  message: string;
+}
+
+/**
+ * Run boxing analysis on a video
+ *
+ * Calls the synchronous analysis endpoint which:
+ * 1. Extracts frames from video
+ * 2. Runs MediaPipe pose estimation
+ * 3. Analyzes with GPT
+ * 4. Returns a report
+ *
+ * @param accessToken - Bearer token for authentication
+ * @param videoId - UUID of the video to analyze
+ * @returns Analysis result with report ID
+ */
+export async function runAnalysis(
+  accessToken: string,
+  videoId: string
+): Promise<AnalysisResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/analysis/run/${videoId}`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (response.status === 404) {
+    throw new BodySpecsError('Video not found', 'VIDEO_NOT_FOUND', 404);
+  }
+
+  if (response.status === 401) {
+    throw new BodySpecsError('Not authenticated', 'UNAUTHORIZED', 401);
+  }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new BodySpecsError(
+      error.detail || 'Analysis failed',
+      'ANALYSIS_FAILED',
+      response.status
+    );
+  }
+
+  return response.json();
+}
