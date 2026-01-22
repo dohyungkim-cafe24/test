@@ -14,7 +14,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
-from api.routers.auth import get_current_user
+from api.routers.auth import get_current_user_or_guest
 from api.schemas.analysis import (
     ProcessingStatusResponse,
     StartAnalysisRequest,
@@ -46,7 +46,7 @@ router = APIRouter(tags=["processing"])
 async def start_analysis(
     video_id: Annotated[UUID, Path(description="Video ID to analyze")],
     request: StartAnalysisRequest,
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Start analysis pipeline for a video.
 
@@ -123,7 +123,7 @@ async def start_analysis(
 )
 async def get_processing_status(
     analysis_id: Annotated[UUID, Path(description="Analysis ID")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Get current processing status for an analysis.
 

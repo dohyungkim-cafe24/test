@@ -21,7 +21,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from pydantic import BaseModel
 
-from api.routers.auth import get_current_user
+from api.routers.auth import get_current_user_or_guest
 from api.services.database import get_db_session
 from api.services.sharing_service import (
     ShareDisabledError,
@@ -92,7 +92,7 @@ public_router = APIRouter(prefix="/shared", tags=["sharing"])
 )
 async def get_share_status(
     report_id: Annotated[UUID, Path(description="Report ID")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Get current sharing status for a report.
 
@@ -135,7 +135,7 @@ async def get_share_status(
 )
 async def enable_sharing(
     report_id: Annotated[UUID, Path(description="Report ID")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Enable sharing for a report, generating a unique URL.
 
@@ -179,7 +179,7 @@ async def enable_sharing(
 )
 async def disable_sharing(
     report_id: Annotated[UUID, Path(description="Report ID")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Disable sharing for a report, invalidating the URL.
 

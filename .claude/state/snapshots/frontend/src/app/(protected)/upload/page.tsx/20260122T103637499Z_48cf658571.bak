@@ -83,8 +83,7 @@ export default function UploadPage() {
 
   const handleFileSelect = useCallback(
     async (file: File, durationSeconds: number) => {
-      const token = effectiveToken;
-      if (!token) {
+      if (!accessToken) {
         setErrorMessage('Please log in to upload videos');
         setShowError(true);
         return;
@@ -112,7 +111,7 @@ export default function UploadPage() {
 
       try {
         const result: UploadCompleteResponse = await uploadVideo(
-          token,
+          accessToken,
           file,
           durationSeconds,
           (progressUpdate) => {
@@ -147,7 +146,7 @@ export default function UploadPage() {
         abortControllerRef.current = null;
       }
     },
-    [effectiveToken, router]
+    [accessToken, router]
   );
 
   const handleValidationError = useCallback((error: string) => {

@@ -19,7 +19,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
-from api.routers.auth import get_current_user
+from api.routers.auth import get_current_user_or_guest
 from api.schemas.dashboard import (
     DeleteReportResponse,
     ReportListResponse,
@@ -46,7 +46,7 @@ reports_router = APIRouter(prefix="/reports", tags=["reports"])
     },
 )
 async def list_reports(
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
     page: Annotated[int, Query(ge=1, description="Page number")] = 1,
     limit: Annotated[int, Query(ge=1, le=50, description="Items per page")] = 10,
 ):
@@ -82,7 +82,7 @@ async def list_reports(
 )
 async def delete_report(
     report_id: Annotated[UUID, Path(description="Report ID to delete")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Delete a report (soft delete with undo support).
 
@@ -127,7 +127,7 @@ async def delete_report(
 )
 async def restore_report(
     report_id: Annotated[UUID, Path(description="Report ID to restore")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Restore a deleted report (undo delete).
 

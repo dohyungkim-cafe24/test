@@ -117,56 +117,6 @@ async def get_current_user(
         )
 
 
-async def get_current_user_or_guest(
-    authorization: Annotated[Optional[str], Header()] = None,
-    settings: Settings = Depends(get_settings),
-) -> dict:
-    """Dependency to get current user or allow guest access.
-
-    Returns user data if authenticated, or guest user data if guest token provided.
-    Guest tokens start with 'guest_'.
-    """
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    token = authorization[7:]  # Remove "Bearer " prefix
-
-    # Check for guest token
-    if token.startswith("guest_"):
-        return {
-            "id": token,
-            "email": "guest@punchanalytics.app",
-            "is_guest": True,
-        }
-
-    # Try regular token verification
-    oauth_service = OAuthService(settings)
-    try:
-        payload = oauth_service.verify_access_token(token)
-        return {
-            "id": payload["sub"],
-            "email": payload["email"],
-            "is_guest": False,
-        }
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
 # === Kakao OAuth ===
 
 

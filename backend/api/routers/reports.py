@@ -18,7 +18,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
-from api.routers.auth import get_current_user
+from api.routers.auth import get_current_user_or_guest
 from api.schemas.report import ReportDetailResponse
 from api.services.database import get_db_session
 from api.services.report_service import (
@@ -41,7 +41,7 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 )
 async def get_report(
     report_id: Annotated[UUID, Path(description="Report ID to retrieve")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Get full report data by ID.
 
@@ -90,7 +90,7 @@ async def get_report(
 )
 async def get_report_by_analysis(
     analysis_id: Annotated[UUID, Path(description="Analysis ID")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Get report by analysis ID.
 

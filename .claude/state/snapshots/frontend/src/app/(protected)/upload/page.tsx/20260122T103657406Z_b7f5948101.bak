@@ -112,7 +112,7 @@ export default function UploadPage() {
 
       try {
         const result: UploadCompleteResponse = await uploadVideo(
-          token,
+          accessToken,
           file,
           durationSeconds,
           (progressUpdate) => {
@@ -147,7 +147,7 @@ export default function UploadPage() {
         abortControllerRef.current = null;
       }
     },
-    [effectiveToken, router]
+    [accessToken, router]
   );
 
   const handleValidationError = useCallback((error: string) => {

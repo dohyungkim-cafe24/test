@@ -11,7 +11,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
-from api.routers.auth import get_current_user
+from api.routers.auth import get_current_user_or_guest
 from api.schemas.body_specs import (
     BodySpecsCreate,
     BodySpecsResponse,
@@ -34,7 +34,7 @@ router = APIRouter(prefix="/analysis", tags=["analysis", "body-specs"])
     },
 )
 async def get_prefill(
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Get user's saved body specs for pre-filling form.
 
@@ -65,7 +65,7 @@ async def get_prefill(
 async def create_body_specs(
     video_id: Annotated[UUID, Path(description="Video ID")],
     request: BodySpecsCreate,
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Create body specifications for a video.
 

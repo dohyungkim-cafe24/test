@@ -51,7 +51,7 @@ router = APIRouter(prefix="/upload", tags=["upload"])
 )
 async def initiate_upload(
     request: UploadInitiateRequest,
-    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
+    current_user: Annotated[dict, Depends(get_current_user)],
 ):
     """Initiate a chunked upload session.
 
@@ -87,7 +87,7 @@ async def upload_chunk(
     upload_id: Annotated[UUID, Path(description="Upload session ID")],
     chunk_number: Annotated[int, Path(description="0-indexed chunk number", ge=0)],
     request: Request,
-    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
+    current_user: Annotated[dict, Depends(get_current_user)],
     content_md5: Annotated[Optional[str], Header(alias="Content-MD5")] = None,
 ):
     """Upload a single chunk.
@@ -151,7 +151,7 @@ async def upload_chunk(
 )
 async def complete_upload(
     upload_id: Annotated[UUID, Path(description="Upload session ID")],
-    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
+    current_user: Annotated[dict, Depends(get_current_user)],
 ):
     """Complete the upload and trigger processing.
 
@@ -196,7 +196,7 @@ async def complete_upload(
 )
 async def cancel_upload(
     upload_id: Annotated[UUID, Path(description="Upload session ID")],
-    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
+    current_user: Annotated[dict, Depends(get_current_user)],
 ):
     """Cancel an in-progress upload.
 
@@ -231,7 +231,7 @@ async def cancel_upload(
 )
 async def get_upload_status(
     upload_id: Annotated[UUID, Path(description="Upload session ID")],
-    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
+    current_user: Annotated[dict, Depends(get_current_user)],
 ):
     """Get upload status for resumption.
 
@@ -271,7 +271,7 @@ async def get_upload_status(
 )
 async def get_received_chunks(
     upload_id: Annotated[UUID, Path(description="Upload session ID")],
-    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
+    current_user: Annotated[dict, Depends(get_current_user)],
 ):
     """Get list of received chunk numbers.
 

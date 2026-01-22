@@ -14,7 +14,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
-from api.routers.auth import get_current_user
+from api.routers.auth import get_current_user_or_guest
 from api.schemas.subject import (
     SubjectError,
     SubjectSelectRequest,
@@ -42,7 +42,7 @@ router = APIRouter(prefix="/analysis", tags=["analysis", "subject"])
 )
 async def get_thumbnails(
     video_id: Annotated[UUID, Path(description="Video ID")],
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Get extracted thumbnails for subject selection.
 
@@ -83,7 +83,7 @@ async def get_thumbnails(
 async def select_subject(
     video_id: Annotated[UUID, Path(description="Video ID")],
     request: SubjectSelectRequest,
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user_or_guest)],
 ):
     """Select analysis subject from thumbnail.
 
