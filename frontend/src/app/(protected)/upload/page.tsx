@@ -109,7 +109,7 @@ export default function UploadPage() {
         setStatus('complete');
 
         // AC-007: Navigate to subject selection after successful upload
-        router.push(`/subject-selection?video_id=${result.video_id}`);
+        router.push(`/subject/${result.video_id}`);
       } catch (error) {
         if (error instanceof Error) {
           if (error.message === 'Upload cancelled') {
