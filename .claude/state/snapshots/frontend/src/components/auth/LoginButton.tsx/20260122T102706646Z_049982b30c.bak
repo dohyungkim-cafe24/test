@@ -127,42 +127,6 @@ export function GoogleLoginButton({ redirectPath }: LoginButtonProps) {
 }
 
 /**
- * Guest login button
- * Allows users to continue without authentication
- */
-export function GuestLoginButton({ redirectPath }: LoginButtonProps) {
-  const handleClick = () => {
-    // Set guest mode in localStorage
-    localStorage.setItem('guestMode', 'true');
-    localStorage.setItem('guestId', `guest_${Date.now()}`);
-    // Redirect to dashboard or specified path
-    window.location.href = redirectPath || '/dashboard';
-  };
-
-  return (
-    <Button
-      variant="text"
-      fullWidth
-      onClick={handleClick}
-      sx={{
-        color: 'text.secondary',
-        textTransform: 'none',
-        fontWeight: 400,
-        py: 1.5,
-        '&:hover': {
-          backgroundColor: 'action.hover',
-        },
-      }}
-    >
-      Continue as Guest
-      <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.7 }}>
-        비회원으로 계속하기
-      </span>
-    </Button>
-  );
-}
-
-/**
  * Combined login buttons stack
  */
 export function LoginButtons({ redirectPath }: LoginButtonProps) {
@@ -170,7 +134,6 @@ export function LoginButtons({ redirectPath }: LoginButtonProps) {
     <Stack spacing={2} sx={{ width: '100%', maxWidth: 360 }}>
       <KakaoLoginButton redirectPath={redirectPath} />
       <GoogleLoginButton redirectPath={redirectPath} />
-      <GuestLoginButton redirectPath={redirectPath} />
     </Stack>
   );
 }

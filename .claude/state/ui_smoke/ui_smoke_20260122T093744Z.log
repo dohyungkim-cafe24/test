@@ -1,0 +1,6 @@
+# ui_smoke
+# utc: 20260122T093744Z
+# project: /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics
+# cwd: /Users/briankim/Desktop/ai/agi-dev
+
+UI_SMOKE_SKIP: no smoke policy; package.json not found

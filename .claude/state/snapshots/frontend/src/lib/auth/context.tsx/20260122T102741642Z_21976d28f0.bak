@@ -149,7 +149,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setAccessTokenState(null);
     storeToken(null);
-    clearGuestMode();
   }, []);
 
   /**
@@ -196,20 +195,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     async function initAuth() {
       setIsLoading(true);
 
+      // Check for token in URL fragment (from OAuth callback)
+      // M1 fix: Token is now in fragment (#) instead of query param (?)
+      // Fragment is not sent to server, not logged, more secure
       if (typeof window !== 'undefined') {
-        // Check for guest mode first
-        if (isGuestMode()) {
-          const guestUser = getGuestUser();
-          if (guestUser) {
-            setUser(guestUser);
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        // Check for token in URL fragment (from OAuth callback)
-        // M1 fix: Token is now in fragment (#) instead of query param (?)
-        // Fragment is not sent to server, not logged, more secure
         const hash = window.location.hash;
         let urlToken: string | null = null;
 

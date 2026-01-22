@@ -22,8 +22,8 @@ export interface UserProfile {
   id: string;
   email: string;
   name: string | null;
-  provider: 'kakao' | 'google' | 'guest';
-  avatar_url?: string | null;
+  provider: 'kakao' | 'google';
+  avatar_url: string | null;
   created_at: string;
   body_specs?: {
     height_cm: number | null;
