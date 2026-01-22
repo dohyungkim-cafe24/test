@@ -325,8 +325,8 @@ export default function BodySpecsPage() {
         stance: stance as Stance,
       });
 
-      // Navigate to processing status page
-      router.push(`/processing/${videoId}`);
+      // Navigate to dashboard (skip processing - not implemented)
+      router.push('/dashboard');
     } catch (error) {
       if (error instanceof BodySpecsError) {
         setErrorMessage(error.message);
