@@ -46,23 +46,9 @@ interface ProgressState {
   estimatedTimeRemaining?: number;
 }
 
-// Check if guest mode
-function isGuestMode(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem('guestMode') === 'true';
-}
-
-function getGuestToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('guestId');
-}
-
 export default function UploadPage() {
   const router = useRouter();
   const { accessToken, isLoading: isAuthLoading, isAuthenticated } = useAuth();
-
-  // For guest users, use guest ID as token
-  const effectiveToken = accessToken || (isGuestMode() ? getGuestToken() : null);
 
   const [status, setStatus] = useState<UploadStatus>('idle');
   const [progress, setProgress] = useState<ProgressState>({
@@ -83,8 +69,7 @@ export default function UploadPage() {
 
   const handleFileSelect = useCallback(
     async (file: File, durationSeconds: number) => {
-      const token = effectiveToken;
-      if (!token) {
+      if (!accessToken) {
         setErrorMessage('Please log in to upload videos');
         setShowError(true);
         return;
@@ -112,7 +97,7 @@ export default function UploadPage() {
 
       try {
         const result: UploadCompleteResponse = await uploadVideo(
-          token,
+          accessToken,
           file,
           durationSeconds,
           (progressUpdate) => {
@@ -147,7 +132,7 @@ export default function UploadPage() {
         abortControllerRef.current = null;
       }
     },
-    [effectiveToken, router]
+    [accessToken, router]
   );
 
   const handleValidationError = useCallback((error: string) => {

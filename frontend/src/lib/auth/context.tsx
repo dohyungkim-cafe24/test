@@ -62,8 +62,6 @@ export const AuthContext = createContext<AuthContextValue>(defaultContextValue);
  * Token storage keys
  */
 const TOKEN_STORAGE_KEY = 'punch_access_token';
-const GUEST_MODE_KEY = 'guestMode';
-const GUEST_ID_KEY = 'guestId';
 
 /**
  * Get stored access token
@@ -71,39 +69,6 @@ const GUEST_ID_KEY = 'guestId';
 function getStoredToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem(TOKEN_STORAGE_KEY);
-}
-
-/**
- * Check if guest mode is enabled
- */
-function isGuestMode(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem(GUEST_MODE_KEY) === 'true';
-}
-
-/**
- * Get guest user profile
- */
-function getGuestUser(): UserProfile | null {
-  if (typeof window === 'undefined') return null;
-  const guestId = localStorage.getItem(GUEST_ID_KEY);
-  if (!guestId) return null;
-  return {
-    id: guestId,
-    email: 'guest@punchanalytics.app',
-    name: 'Guest User',
-    provider: 'guest' as const,
-    created_at: new Date().toISOString(),
-  };
-}
-
-/**
- * Clear guest mode
- */
-function clearGuestMode(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(GUEST_MODE_KEY);
-  localStorage.removeItem(GUEST_ID_KEY);
 }
 
 /**
@@ -149,7 +114,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setAccessTokenState(null);
     storeToken(null);
-    clearGuestMode();
   }, []);
 
   /**
@@ -197,17 +161,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
 
       if (typeof window !== 'undefined') {
-        // Check for guest mode first
-        if (isGuestMode()) {
-          const guestUser = getGuestUser();
-          if (guestUser) {
-            setUser(guestUser);
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        // Check for token in URL fragment (from OAuth callback)
+        // Check for token in URL fragment (from OAuth callback or guest login)
         // M1 fix: Token is now in fragment (#) instead of query param (?)
         // Fragment is not sent to server, not logged, more secure
         const hash = window.location.hash;

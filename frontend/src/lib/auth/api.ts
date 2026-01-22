@@ -122,3 +122,26 @@ export async function logout(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Login as guest user
+ * Creates a guest user in the database and returns access token
+ * @returns Token response or null if login failed
+ */
+export async function guestLogin(): Promise<TokenResponse | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/guest`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      console.error('Guest login failed:', response.status);
+      return null;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Guest login failed:', error);
+    return null;
+  }
+}

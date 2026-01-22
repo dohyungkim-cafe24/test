@@ -121,10 +121,10 @@ async def get_current_user_or_guest(
     authorization: Annotated[Optional[str], Header()] = None,
     settings: Settings = Depends(get_settings),
 ) -> dict:
-    """Dependency to get current user or allow guest access.
+    """Dependency to get current user (including guest users).
 
-    Returns user data if authenticated, or guest user data if guest token provided.
-    Guest tokens start with 'guest_'.
+    All users (including guests) now use JWT tokens.
+    Guest users are created via /auth/guest endpoint.
     """
     if not authorization:
         raise HTTPException(
@@ -142,22 +142,14 @@ async def get_current_user_or_guest(
 
     token = authorization[7:]  # Remove "Bearer " prefix
 
-    # Check for guest token
-    if token.startswith("guest_"):
-        return {
-            "id": token,
-            "email": "guest@punchanalytics.app",
-            "is_guest": True,
-        }
-
-    # Try regular token verification
+    # Verify JWT token (works for both regular and guest users)
     oauth_service = OAuthService(settings)
     try:
         payload = oauth_service.verify_access_token(token)
         return {
             "id": payload["sub"],
             "email": payload["email"],
-            "is_guest": False,
+            "is_guest": payload["email"].endswith("@guest.punchanalytics.app"),
         }
     except ValueError:
         raise HTTPException(
@@ -503,6 +495,49 @@ async def logout(
     )
 
     return LogoutResponse(message="Logged out successfully")
+
+
+# === Guest Login ===
+
+
+@router.post("/guest", response_model=TokenResponse)
+async def guest_login(
+    request: Request,
+    oauth_service: Annotated[OAuthService, Depends(get_oauth_service)],
+    settings: Annotated[Settings, Depends(get_settings)],
+):
+    """Create a guest user and return access token.
+
+    Guest users are stored in the database with provider='guest'.
+    This allows them to upload videos and use the analysis features.
+    """
+    import secrets
+    from uuid import uuid4
+
+    # Generate unique guest identifier
+    guest_id = f"guest_{secrets.token_hex(8)}"
+    guest_email = f"{guest_id}@guest.punchanalytics.app"
+
+    async with get_db_session() as session:
+        # Create guest user in database
+        user = await user_service.upsert_user(
+            session,
+            provider="guest",
+            provider_id=guest_id,
+            email=guest_email,
+            name="Guest User",
+            avatar_url=None,
+        )
+        user_id = str(user.id)
+
+        # Create JWT access token
+        jwt_access_token = oauth_service.create_access_token(user_id, guest_email)
+
+    return TokenResponse(
+        access_token=jwt_access_token,
+        token_type="Bearer",
+        expires_in=settings.access_token_expire_minutes * 60,
+    )
 
 
 # === Protected Routes ===

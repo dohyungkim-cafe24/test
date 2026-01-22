@@ -7,10 +7,11 @@
  * @acceptance-criteria AC-001, AC-002
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
-import { getKakaoAuthUrl, getGoogleAuthUrl } from '@/lib/auth/api';
+import { getKakaoAuthUrl, getGoogleAuthUrl, guestLogin } from '@/lib/auth/api';
 
 /**
  * Kakao OAuth login icon
@@ -131,12 +132,26 @@ export function GoogleLoginButton({ redirectPath }: LoginButtonProps) {
  * Allows users to continue without authentication
  */
 export function GuestLoginButton({ redirectPath }: LoginButtonProps) {
-  const handleClick = () => {
-    // Set guest mode in localStorage
-    localStorage.setItem('guestMode', 'true');
-    localStorage.setItem('guestId', `guest_${Date.now()}`);
-    // Redirect to dashboard or specified path
-    window.location.href = redirectPath || '/dashboard';
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClick = async () => {
+    setIsLoading(true);
+    try {
+      const response = await guestLogin();
+      if (response?.access_token) {
+        // Store the access token the same way OAuth callback does (URL fragment)
+        // Navigate with the token in the URL fragment
+        window.location.href = `${redirectPath || '/dashboard'}#access_token=${response.access_token}`;
+      } else {
+        console.error('Guest login failed: no token received');
+        alert('Guest login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Guest login error:', error);
+      alert('Guest login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -144,6 +159,7 @@ export function GuestLoginButton({ redirectPath }: LoginButtonProps) {
       variant="text"
       fullWidth
       onClick={handleClick}
+      disabled={isLoading}
       sx={{
         color: 'text.secondary',
         textTransform: 'none',
@@ -154,10 +170,16 @@ export function GuestLoginButton({ redirectPath }: LoginButtonProps) {
         },
       }}
     >
-      Continue as Guest
-      <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.7 }}>
-        비회원으로 계속하기
-      </span>
+      {isLoading ? (
+        <CircularProgress size={20} color="inherit" />
+      ) : (
+        <>
+          Continue as Guest
+          <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.7 }}>
+            비회원으로 계속하기
+          </span>
+        </>
+      )}
     </Button>
   );
 }
