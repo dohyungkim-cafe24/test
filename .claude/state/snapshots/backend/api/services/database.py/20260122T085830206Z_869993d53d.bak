@@ -17,27 +17,20 @@ def get_engine():
     if _engine is None:
         settings = get_settings()
 
-        # Convert DATABASE_URL to async driver format
-        database_url = settings.database_url
-        if database_url.startswith("postgresql://"):
-            database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        elif database_url.startswith("postgres://"):
-            database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
-
         # Base engine options
         engine_options = {
             "echo": settings.environment == "development",
         }
 
         # PostgreSQL-specific pool options (not compatible with SQLite)
-        if database_url.startswith("postgresql"):
+        if settings.database_url.startswith("postgresql"):
             engine_options.update({
                 "pool_pre_ping": True,
                 "pool_size": 5,
                 "max_overflow": 10,
             })
 
-        _engine = create_async_engine(database_url, **engine_options)
+        _engine = create_async_engine(settings.database_url, **engine_options)
     return _engine
 
 
