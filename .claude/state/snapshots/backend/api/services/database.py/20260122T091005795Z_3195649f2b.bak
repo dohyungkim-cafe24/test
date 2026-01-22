@@ -24,17 +24,6 @@ def get_engine():
         elif database_url.startswith("postgres://"):
             database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
 
-        # Remove sslmode parameter (asyncpg uses ssl=True instead)
-        # and other incompatible parameters
-        if "?" in database_url:
-            base_url, params = database_url.split("?", 1)
-            param_list = params.split("&")
-            filtered_params = [p for p in param_list if not p.startswith("sslmode=") and not p.startswith("channel_binding=")]
-            if filtered_params:
-                database_url = base_url + "?" + "&".join(filtered_params)
-            else:
-                database_url = base_url
-
         # Base engine options
         engine_options = {
             "echo": settings.environment == "development",
@@ -47,8 +36,6 @@ def get_engine():
                 "pool_size": 5,
                 "max_overflow": 10,
             })
-            # Enable SSL for asyncpg
-            engine_options["connect_args"] = {"ssl": True}
 
         _engine = create_async_engine(database_url, **engine_options)
     return _engine
