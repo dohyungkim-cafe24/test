@@ -91,7 +91,7 @@ class UploadChunkError(BaseModel):
 class UploadCompleteResponse(BaseModel):
     """Response schema for upload completion."""
     video_id: str
-    status: Literal["processing_thumbnails", "ready", "failed"] = "processing_thumbnails"
+    status: Literal["processing", "ready", "failed"] = "processing"
     duration_seconds: int
     file_size: int
 
