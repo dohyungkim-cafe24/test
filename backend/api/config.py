@@ -1,0 +1,74 @@
+"""Application configuration using pydantic-settings."""
+from functools import lru_cache
+from typing import Literal
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    # Environment
+    environment: Literal["development", "staging", "production", "test"] = "development"
+
+    # Security
+    # NOTE: In production, SECRET_KEY must be set via environment variable.
+    # The default is only for local development/testing.
+    secret_key: str = "dev-only-change-me-in-production"
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 7
+
+    # Database
+    database_url: str = "postgresql+asyncpg://localhost/punchanalytics"
+
+    # Redis
+    redis_url: str = "redis://localhost:6379/0"
+
+    # OAuth - Kakao
+    kakao_client_id: str = ""
+    kakao_client_secret: str = ""
+    kakao_redirect_uri: str = "http://localhost:8000/api/v1/auth/kakao/callback"
+
+    # OAuth - Google
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = "http://localhost:8000/api/v1/auth/google/callback"
+
+    # Frontend
+    frontend_url: str = "http://localhost:3000"
+
+    @property
+    def is_production(self) -> bool:
+        """Check if running in production."""
+        return self.environment == "production"
+
+    def __init__(self, **kwargs):
+        """Initialize settings with production safety check."""
+        super().__init__(**kwargs)
+        # Fail-fast: reject weak secret key in production
+        if self.is_production and self.secret_key == "dev-only-change-me-in-production":
+            raise ValueError("SECRET_KEY must be set in production environment")
+
+    @property
+    def cors_origins(self) -> list[str]:
+        """Get allowed CORS origins."""
+        if self.is_production:
+            return [self.frontend_url]
+        return [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            self.frontend_url,
+        ]
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """Get cached settings instance."""
+    return Settings()

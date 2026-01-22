@@ -1,0 +1,12 @@
+# Files Changed - F004 Body Specification Input
+
+## Added
+backend/api/schemas/body_specs.py
+backend/api/models/body_specs.py
+backend/api/services/body_specs_service.py
+backend/api/routers/body_specs.py
+backend/tests/test_body_specs.py
+
+## Modified
+backend/api/main.py
+backend/api/services/database.py

@@ -1,0 +1,34 @@
+# UX Verifier Report — F005
+
+- Project: projects/punch-analytics
+- Run: 20260121-225048-b20489
+- Stage: test
+- UI required: yes
+- Created (UTC): 2026-01-21T22:54:24Z
+
+## Verdict: **FAIL**
+
+## Contract
+- UX_CONTRACT: docs/ux/UX_CONTRACT.md
+- DESIGN_SYSTEM: docs/ux/DESIGN_SYSTEM.md
+- UI_STATES: docs/ux/UI_STATES.md
+- design_tokens: docs/ux/design_tokens.json
+
+## Runtime evidence
+- TESTER_REPORT: .claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/deliverables/TESTER_REPORT.md
+- screenshots: .claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/evidence/screenshots
+
+## Checks
+
+| ID | Check | Type | Status | Evidence |
+|---|---|---|---|---|
+| UXV-001 | Contract present + non-placeholder | deterministic | PASS | docs/ux/UX_CONTRACT.md |
+| UXV-002 | Design system: Material 3 declared | deterministic | PASS | docs/ux/DESIGN_SYSTEM.md |
+| UXV-003 | UI states completeness (doc) | deterministic | PASS | docs/ux/UI_STATES.md |
+| UXV-004 | Screenshots captured | deterministic | FAIL | .claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/evidence/screenshots |
+| UXV-005 | UI smoke / E2E log present | best-effort | SKIP | - |
+| UXV-006 | Performance evidence present (optional) | best-effort | SKIP | - |
+| UXV-007 | Design tokens declared + applied | deterministic | PASS | docs/ux/design_tokens.json, src/theme/design_tokens.css, src/theme/design_tokens.ts |
+
+## Top issues
+- **UXV-004 Screenshots captured**: No screenshots found. Capture runtime screenshots for affected screens/states. Helper: python3 .claude/scripts/capture_screenshots.py --attempt-dir <tester_attempt_dir> --url <base_url> --pages "/" --viewports "1280x800,375x667"

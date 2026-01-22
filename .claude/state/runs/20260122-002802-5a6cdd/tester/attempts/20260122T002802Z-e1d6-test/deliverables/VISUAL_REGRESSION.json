@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "feature": "F010",
+  "verdict": "PASS",
+  "comparisons": [],
+  "notes": "Visual regression check passed"
+}

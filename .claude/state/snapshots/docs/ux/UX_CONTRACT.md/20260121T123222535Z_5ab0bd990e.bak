@@ -1,0 +1,68 @@
+# UX Contract — TEMPLATE
+
+> Owner: ux-designer
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+>
+> Tip: for feature-specific non-negotiables, annotate the relevant section with `@F###` to enable deterministic feature-scoped UX packets.
+
+## Inputs
+
+- docs/product/PRD.md
+- docs/product/STORY_MAP.md (Launch scope)
+- docs/product/REQUIREMENTS_BASELINE.md (quality bar)
+- docs/product/MARKET_BENCHMARK.md (feature parity / gaps)
+
+---
+
+## Scope
+
+PLACEHOLDER
+
+## Competitive bar
+
+State the competitive baseline and non-negotiable comparables.
+
+PLACEHOLDER
+
+## Non-negotiables
+
+- Performance budgets (e.g., LCP/INP/CLS) for key screens
+- Error states must be designed (Loading / Empty / Error)
+- Validation must be user-facing (clear messages + affordances)
+
+PLACEHOLDER
+
+## Quality bar
+
+- **Material Design 3** (or clearly stated alternatives) for core components
+- Interaction and motion guidelines
+- Content standards (tone, consistency, grammar)
+
+PLACEHOLDER
+
+## Performance
+
+Define measurable budgets and measurement method.
+
+PLACEHOLDER
+
+## Heuristic acceptance criteria
+
+Define heuristics (e.g., usability, accessibility, consistency) and pass/fail indicators.
+
+PLACEHOLDER
+
+## Evidence
+
+Define required evidence artifacts (e.g., screenshots, usability notes, UX_VERIFY/UX_JUDGE).
+
+PLACEHOLDER
+
+## Change control
+
+Define how UX changes are proposed, reviewed, and approved.
+
+PLACEHOLDER

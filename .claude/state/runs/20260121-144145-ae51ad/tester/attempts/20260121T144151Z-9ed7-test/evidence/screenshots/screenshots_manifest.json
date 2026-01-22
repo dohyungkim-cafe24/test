@@ -1,0 +1,19 @@
+{
+  "captured_at": "2026-01-21T23:54:44.155785",
+  "base_url": "http://localhost:3000",
+  "pages": [
+    "/",
+    "/upload"
+  ],
+  "screenshots": [
+    "home_1280x800_20260121_235353.png",
+    "home_375x667_20260121_235353.png",
+    "upload_1280x800_20260121_235353.png",
+    "upload_375x667_20260121_235353.png"
+  ],
+  "validation": {
+    "enabled": true,
+    "blank_stddev_threshold": 1.5,
+    "blank_screenshots": []
+  }
+}

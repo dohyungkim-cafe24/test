@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.4",
+  "generated_at": "",
+  "notes": "This is the canonical backlog + verification ledger. Update via /agi-bdd (promotion) and /agi-test (record_feature_result.py).",
+  "source_docs": {
+    "requirements_baseline": "docs/product/REQUIREMENTS_BASELINE.md",
+    "market_benchmark": "docs/product/MARKET_BENCHMARK.md",
+    "story_map": "docs/product/STORY_MAP.md",
+    "user_stories": "docs/product/USER_STORIES.md",
+    "ux_spec": "docs/ux/UX_SPEC.md",
+    "ux_contract": "docs/ux/UX_CONTRACT.md",
+    "design_system": "docs/ux/DESIGN_SYSTEM.md"
+  },
+  "features": [
+    {
+      "id": "F001",
+      "title": "Example feature",
+      "category": "ui",
+      "priority": "P1",
+      "description": "What the feature does and why it matters.",
+      "user_story": "As a <persona>, I want <goal> so that <benefit>",
+      "acceptance_criteria": [
+        "Given ... When ... Then ..."
+      ],
+      "bdd_trace": [
+        "specs/bdd/example.feature:10"
+      ],
+      "security_sensitive": false,
+      "requires_screenshots": true,
+      "requires_ux_validation": true,
+      "requires_ux_judge": true,
+      "passes": false,
+      "implemented_at": null,
+      "last_tested_at": null,
+      "evidence": {},
+      "requires_browser_runtime": true,
+      "requires_visual_regression": true
+    }
+  ]
+}

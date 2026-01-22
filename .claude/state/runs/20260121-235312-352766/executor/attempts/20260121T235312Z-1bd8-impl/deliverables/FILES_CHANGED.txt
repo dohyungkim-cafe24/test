@@ -1,0 +1,20 @@
+# Files Changed for F009 Report Sharing
+
+## Backend - Added
+backend/api/models/share_link.py
+backend/api/services/sharing_service.py
+backend/api/routers/sharing.py
+backend/tests/test_sharing.py
+
+## Backend - Modified
+backend/api/main.py
+
+## Frontend - Added
+frontend/src/lib/sharing/api.ts
+frontend/src/lib/sharing/index.ts
+frontend/src/components/report/ShareDialog.tsx
+frontend/src/app/shared/[token]/page.tsx
+frontend/src/app/shared/[token]/layout.tsx
+
+## Frontend - Modified
+frontend/src/app/(protected)/report/[id]/page.tsx

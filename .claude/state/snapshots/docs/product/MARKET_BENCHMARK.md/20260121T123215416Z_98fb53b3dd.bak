@@ -1,0 +1,49 @@
+# Market Benchmark — TEMPLATE
+
+> Owner: product-manager
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/DOC_CONTRACT.md
+- docs/product/PRD.md
+- docs/product/REQUIREMENTS_BASELINE.md
+
+---
+
+**Source selection note (WebFetch):** Some sites are dynamically rendered via Javascript or block automated fetches (HTTP 403). Prefer static pages (pricing/features/docs/help) and third‑party reviews if needed.
+
+## Comparable products
+
+- Product A — why it is comparable
+- Product B — why it is comparable
+- Product C — why it is comparable
+
+PLACEHOLDER
+
+## Feature parity and gaps
+
+A concrete parity/gaps list that maps directly to features you will implement.
+
+PLACEHOLDER
+
+## UX baseline
+
+PLACEHOLDER
+
+## Quality bar
+
+>=5 concrete bullets. Make this measurable (latency, error budgets, security baseline, UX success criteria, etc.).
+
+PLACEHOLDER
+
+## Sources
+
+Include at least 3 concrete URLs.
+
+- https://example.com
+
+PLACEHOLDER

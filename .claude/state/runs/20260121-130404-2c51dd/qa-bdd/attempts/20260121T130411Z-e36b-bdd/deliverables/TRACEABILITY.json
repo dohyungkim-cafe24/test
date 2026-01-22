@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "version": "1.0.0",
+  "generated_at": "2026-01-21T13:04:11Z",
+  "source_docs": [
+    "docs/product/PRD.md",
+    "docs/product/REQUIREMENTS_BASELINE.md",
+    "docs/product/MARKET_BENCHMARK.md",
+    "docs/product/STORY_MAP.md",
+    "docs/ux/UX_CONTRACT.md",
+    "docs/ux/DESIGN_SYSTEM.md"
+  ],
+  "traceability": [
+    {
+      "user_story": "US-001",
+      "feature": "F001",
+      "gherkin_file": "auth.feature",
+      "scenarios": [
+        "Successful Kakao OAuth login",
+        "Successful Google OAuth login",
+        "User logs out successfully",
+        "Unauthenticated user redirected to login",
+        "Session expiration prompts re-authentication",
+        "OAuth login cancelled by user",
+        "OAuth provider unavailable"
+      ]
+    },
+    {
+      "user_story": "US-002",
+      "feature": "F002",
+      "gherkin_file": "upload.feature",
+      "scenarios": [
+        "Successful video upload with valid file",
+        "Upload shows progress indicator",
+        "File exceeds maximum size limit",
+        "Video duration too short",
+        "Video duration too long",
+        "Unsupported file format rejected",
+        "Upload resumes after network interruption",
+        "User cancels upload in progress",
+        "Upload area shows empty state initially"
+      ]
+    },
+    {
+      "user_story": "US-003",
+      "feature": "F003",
+      "gherkin_file": "subject-selection.feature",
+      "scenarios": [
+        "Thumbnail grid displays extracted frames",
+        "User selects subject from thumbnail",
+        "User changes selection before confirmation",
+        "User confirms subject selection",
+        "Single person auto-selected",
+        "No subjects detected in video",
+        "Thumbnail extraction loading state"
+      ]
+    },
+    {
+      "user_story": "US-004",
+      "feature": "F004",
+      "gherkin_file": "body-specs.feature",
+      "scenarios": [
+        "User enters valid body specifications",
+        "Height below minimum shows validation error",
+        "Height above maximum shows validation error",
+        "Weight below minimum shows validation error",
+        "Weight above maximum shows validation error",
+        "All fields required for submission",
+        "Body specs pre-filled for returning user",
+        "Invalid number format shows error"
+      ]
+    },
+    {
+      "user_story": "US-005",
+      "feature": "F005",
+      "gherkin_file": "processing.feature",
+      "scenarios": [
+        "Pose estimation extracts joint coordinates",
+        "Subject tracking maintains across frames",
+        "Processing status shows step progress",
+        "Pose estimation fails with poor video quality",
+        "Processing takes longer than expected"
+      ]
+    },
+    {
+      "user_story": "US-006",
+      "feature": "F006",
+      "gherkin_file": "processing.feature",
+      "scenarios": [
+        "Strike detection identifies punch types",
+        "Defensive action detection identifies guards",
+        "Stamps include confidence scores",
+        "No significant actions detected"
+      ]
+    },
+    {
+      "user_story": "US-007",
+      "feature": "F007",
+      "gherkin_file": "processing.feature",
+      "scenarios": [
+        "LLM generates strategic analysis",
+        "Analysis adapts to beginner experience level",
+        "Analysis adapts to competitive experience level",
+        "LLM API failure triggers retry",
+        "LLM API exhausts retries"
+      ]
+    },
+    {
+      "user_story": "US-008",
+      "feature": "F008",
+      "gherkin_file": "report.feature",
+      "scenarios": [
+        "Report displays summary section",
+        "Report displays strengths section",
+        "Report displays weaknesses section",
+        "Report displays recommendations section",
+        "Report displays key moments with timestamps",
+        "Report displays metrics with visualizations",
+        "Report includes AI disclaimer",
+        "Report loads within performance target",
+        "Report displays correctly on mobile viewport",
+        "Report displays correctly on desktop viewport"
+      ]
+    },
+    {
+      "user_story": "US-009",
+      "feature": "F009",
+      "gherkin_file": "sharing.feature",
+      "scenarios": [
+        "Report shows share button in private state",
+        "User enables sharing and gets unique URL",
+        "User copies share link to clipboard",
+        "Shared report accessible without login",
+        "User disables sharing",
+        "Disabled share link returns error",
+        "User re-enables sharing gets new URL",
+        "Shared report displays social preview"
+      ]
+    },
+    {
+      "user_story": "US-010",
+      "feature": "F010",
+      "gherkin_file": "dashboard.feature",
+      "scenarios": [
+        "Dashboard displays report list sorted by date",
+        "Report list item shows thumbnail and summary",
+        "User navigates to report from list",
+        "User deletes report with confirmation",
+        "Dashboard shows empty state for new user",
+        "Dashboard loading state shows skeletons"
+      ]
+    }
+  ]
+}

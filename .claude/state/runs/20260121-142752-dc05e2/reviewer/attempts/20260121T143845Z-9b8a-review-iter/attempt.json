@@ -1,0 +1,11 @@
+{
+  "attempt_id": "20260121T143845Z-9b8a",
+  "created": "2026-01-21 23:38:45",
+  "agent": "reviewer",
+  "label": "review-iter",
+  "run_id": "20260121-142752-dc05e2",
+  "scratch_dir": "scratch",
+  "deliverables_dir": "deliverables",
+  "evidence_dir": "evidence",
+  "sealed": false
+}

@@ -1,0 +1,707 @@
+'use client';
+
+/**
+ * Report Display page
+ * @file page.tsx
+ * @feature F008 - Report Display
+ * @feature F009 - Report Sharing
+ *
+ * Implements:
+ * - AC-041: Summary section displays overall assessment
+ * - AC-042: Strengths section shows 3-5 observations
+ * - AC-043: Weaknesses section shows 3-5 improvement areas
+ * - AC-044: Recommendations section shows 3-5 actionable items
+ * - AC-045: Key moments section with timestamp links
+ * - AC-046: Metrics displayed with visual indicators
+ * - AC-047: Report page loads within 1.5 seconds
+ * - AC-048: Report responsive on mobile and desktop
+ * - AC-049: Share button shows on report page (default private)
+ *
+ * BDD Scenarios:
+ * - Report displays summary section
+ * - Report displays strengths section
+ * - Report displays weaknesses section
+ * - Report displays recommendations section
+ * - Report displays key moments with timestamps
+ * - Report displays metrics with visualizations
+ * - Report includes AI disclaimer
+ * - Report loads within performance target
+ * - Report displays correctly on mobile and desktop viewports
+ */
+
+import { useCallback, useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  Grid,
+  IconButton,
+  LinearProgress,
+  Paper,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import ShareIcon from '@mui/icons-material/Share';
+import SportsIcon from '@mui/icons-material/Sports';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import { useAuth } from '@/lib/auth/hooks';
+import { ShareDialog } from '@/components/report/ShareDialog';
+import {
+  formatTimestamp,
+  getReport,
+  ReportError,
+  type MetricValue,
+  type RecommendationItem,
+  type ReportResponse,
+  type StampItem,
+  type StrengthItem,
+  type WeaknessItem,
+} from '@/lib/report';
+
+/**
+ * Get color for metric based on percentile
+ * AC-046: Metrics displayed with visual indicators
+ */
+function getMetricColor(percentile: number | null): 'success' | 'warning' | 'error' | 'info' {
+  if (percentile === null) return 'info';
+  if (percentile >= 70) return 'success';
+  if (percentile >= 40) return 'warning';
+  return 'error';
+}
+
+/**
+ * Get color for priority chip
+ */
+function getPriorityColor(priority: string): 'error' | 'warning' | 'info' {
+  switch (priority) {
+    case 'high':
+      return 'error';
+    case 'medium':
+      return 'warning';
+    default:
+      return 'info';
+  }
+}
+
+/**
+ * Format action type for display
+ */
+function formatActionType(actionType: string): string {
+  const labels: Record<string, string> = {
+    jab: 'Jab / 잽',
+    straight: 'Straight / 스트레이트',
+    hook: 'Hook / 훅',
+    uppercut: 'Uppercut / 어퍼컷',
+    guard_up: 'Guard Up / 가드 올림',
+    guard_down: 'Guard Down / 가드 내림',
+    slip: 'Slip / 슬립',
+    duck: 'Duck / 덕',
+    bob_weave: 'Bob & Weave / 밥앤위브',
+  };
+  return labels[actionType] || actionType;
+}
+
+/**
+ * Format metric name for display
+ */
+function formatMetricName(name: string): { en: string; ko: string } {
+  const labels: Record<string, { en: string; ko: string }> = {
+    punch_frequency: { en: 'Punch Frequency', ko: '펀치 빈도' },
+    guard_recovery_speed: { en: 'Guard Recovery', ko: '가드 회복' },
+    reach_ratio: { en: 'Reach Ratio', ko: '리치 비율' },
+    upper_body_tilt: { en: 'Body Tilt', ko: '상체 기울기' },
+    combination_frequency: { en: 'Combo Frequency', ko: '콤비네이션 빈도' },
+    defense_ratio: { en: 'Defense Ratio', ko: '방어 비율' },
+  };
+  return labels[name] || { en: name, ko: name };
+}
+
+/**
+ * Metric Card component
+ * AC-046: Metrics displayed with visual indicators
+ */
+function MetricCard({ name, metric }: { name: string; metric: MetricValue }) {
+  const labels = formatMetricName(name);
+  const color = getMetricColor(metric.percentile);
+  const percentValue = metric.percentile ?? 50;
+
+  return (
+    <Card
+      sx={{
+        height: '100%',
+        borderLeft: 4,
+        borderColor: `${color}.main`,
+      }}
+    >
+      <CardContent>
+        <Typography variant="caption" color="text.secondary" gutterBottom>
+          {labels.en}
+          <br />
+          <span style={{ fontSize: '0.85em' }}>{labels.ko}</span>
+        </Typography>
+        <Typography variant="h5" component="div" sx={{ mt: 1, mb: 0.5 }}>
+          {metric.value}
+          <Typography
+            component="span"
+            variant="body2"
+            color="text.secondary"
+            sx={{ ml: 0.5 }}
+          >
+            {metric.unit === 'punches_per_10s' ? '/10s' : metric.unit}
+          </Typography>
+        </Typography>
+        <LinearProgress
+          variant="determinate"
+          value={percentValue}
+          color={color}
+          sx={{ mt: 1, height: 6, borderRadius: 3 }}
+        />
+        {metric.percentile !== null && (
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+            {metric.percentile}th percentile
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * Strength Card component
+ * AC-042: Strengths section shows 3-5 observations
+ */
+function StrengthCard({ strength }: { strength: StrengthItem }) {
+  return (
+    <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+      <CheckCircleIcon color="success" sx={{ mt: 0.3, flexShrink: 0 }} />
+      <Box>
+        <Typography variant="subtitle2">{strength.title}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {strength.description}
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+/**
+ * Weakness Card component
+ * AC-043: Weaknesses section shows 3-5 improvement areas
+ */
+function WeaknessCard({ weakness }: { weakness: WeaknessItem }) {
+  return (
+    <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+      <ReportProblemIcon color="warning" sx={{ mt: 0.3, flexShrink: 0 }} />
+      <Box>
+        <Typography variant="subtitle2">{weakness.title}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {weakness.description}
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+/**
+ * Recommendation Card component
+ * AC-044: Recommendations section shows 3-5 actionable items
+ */
+function RecommendationCard({ recommendation }: { recommendation: RecommendationItem }) {
+  return (
+    <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+      <TipsAndUpdatesIcon color="primary" sx={{ mt: 0.3, flexShrink: 0 }} />
+      <Box sx={{ flex: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+          <Typography variant="subtitle2">{recommendation.title}</Typography>
+          <Chip
+            label={recommendation.priority}
+            size="small"
+            color={getPriorityColor(recommendation.priority)}
+            sx={{ height: 20, fontSize: '0.7rem' }}
+          />
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          {recommendation.description}
+        </Typography>
+        {recommendation.drill_type && (
+          <Chip
+            label={recommendation.drill_type}
+            size="small"
+            variant="outlined"
+            sx={{ mt: 1, height: 20, fontSize: '0.7rem' }}
+          />
+        )}
+      </Box>
+    </Box>
+  );
+}
+
+/**
+ * Key Moment Card component
+ * AC-045: Key moments section with timestamp links
+ */
+function KeyMomentCard({ stamp }: { stamp: StampItem }) {
+  return (
+    <Card
+      sx={{
+        minWidth: 140,
+        maxWidth: 160,
+        flexShrink: 0,
+        cursor: 'pointer',
+        '&:hover': {
+          bgcolor: 'action.hover',
+        },
+      }}
+    >
+      <Box
+        sx={{
+          height: 80,
+          bgcolor: 'grey.200',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <SportsIcon sx={{ fontSize: 32, color: 'grey.500' }} />
+      </Box>
+      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+        <Typography variant="caption" fontWeight="medium" noWrap>
+          {formatActionType(stamp.action_type)}
+        </Typography>
+        <Typography variant="body2" color="primary.main" fontWeight="medium">
+          {formatTimestamp(stamp.timestamp_seconds)}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * Loading skeleton for report
+ */
+function ReportSkeleton() {
+  return (
+    <Box>
+      {/* Header skeleton */}
+      <Skeleton variant="text" width={200} height={40} />
+      <Skeleton variant="text" width={150} height={24} sx={{ mb: 3 }} />
+
+      {/* Score skeleton */}
+      <Skeleton variant="circular" width={80} height={80} sx={{ mx: 'auto', mb: 2 }} />
+      <Skeleton variant="text" width="80%" sx={{ mx: 'auto', mb: 1 }} />
+      <Skeleton variant="text" width="60%" sx={{ mx: 'auto', mb: 3 }} />
+
+      {/* Metrics skeleton */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {[1, 2, 3, 4].map((i) => (
+          <Grid item xs={6} md={3} key={i}>
+            <Skeleton variant="rectangular" height={120} />
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Sections skeleton */}
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} variant="rectangular" height={60} sx={{ mb: 1 }} />
+      ))}
+    </Box>
+  );
+}
+
+/**
+ * Report Display Page
+ */
+export default function ReportPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { accessToken, isLoading: isAuthLoading, isAuthenticated } = useAuth();
+
+  const reportId = params.id as string;
+
+  // Report state
+  const [report, setReport] = useState<ReportResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Expanded sections state
+  const [expandedSections, setExpandedSections] = useState({
+    strengths: true,
+    weaknesses: true,
+    recommendations: true,
+  });
+
+  // Share dialog state - AC-049
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+
+  // Fetch report data
+  useEffect(() => {
+    if (!accessToken || !reportId) return;
+
+    const fetchReport = async () => {
+      const startTime = performance.now();
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const data = await getReport(accessToken, reportId);
+        setReport(data);
+
+        // Log performance for AC-047
+        const loadTime = performance.now() - startTime;
+        console.log(`Report loaded in ${loadTime.toFixed(0)}ms`);
+        if (loadTime > 1500) {
+          console.warn('Report load time exceeded 1.5s target');
+        }
+      } catch (err) {
+        if (err instanceof ReportError) {
+          setError(err.message);
+        } else {
+          setError('Failed to load report. Please try again.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReport();
+  }, [accessToken, reportId]);
+
+  // Toggle section expansion
+  const handleSectionToggle = useCallback(
+    (section: keyof typeof expandedSections) => () => {
+      setExpandedSections((prev) => ({
+        ...prev,
+        [section]: !prev[section],
+      }));
+    },
+    []
+  );
+
+  // Navigate back
+  const handleBack = useCallback(() => {
+    router.push('/dashboard');
+  }, [router]);
+
+  // Share dialog handlers - AC-049
+  const handleOpenShareDialog = useCallback(() => {
+    setShareDialogOpen(true);
+  }, []);
+
+  const handleCloseShareDialog = useCallback(() => {
+    setShareDialogOpen(false);
+  }, []);
+
+  // Auth loading state
+  if (isAuthLoading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '60vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '60vh',
+        }}
+      >
+        <Typography>Redirecting to login...</Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: { xs: 2, md: 4 },
+        px: { xs: 2, md: 3 },
+      }}
+    >
+      {/* Header with back button and share button - AC-049 */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <IconButton onClick={handleBack} sx={{ mr: 1 }}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h5" component="h1" sx={{ flex: 1 }}>
+          Analysis Report
+          <Typography
+            component="span"
+            variant="body2"
+            color="text.secondary"
+            sx={{ ml: 1 }}
+          >
+            / 분석 보고서
+          </Typography>
+        </Typography>
+        {/* Share button - AC-049 */}
+        {report && (
+          <Button
+            variant="outlined"
+            startIcon={<ShareIcon />}
+            onClick={handleOpenShareDialog}
+            sx={{ ml: 2 }}
+          >
+            Share
+          </Button>
+        )}
+      </Box>
+
+      {/* Loading state */}
+      {isLoading && <ReportSkeleton />}
+
+      {/* Error state */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+          <br />
+          <span style={{ fontSize: '0.9em' }}>
+            보고서를 불러오는 데 실패했습니다. 다시 시도해 주세요.
+          </span>
+        </Alert>
+      )}
+
+      {/* Report content */}
+      {report && !isLoading && (
+        <>
+          {/* Summary Section - AC-041 */}
+          <Paper sx={{ p: 3, mb: 3, textAlign: 'center' }}>
+            {/* Performance Score */}
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'inline-flex',
+                mb: 2,
+              }}
+            >
+              <CircularProgress
+                variant="determinate"
+                value={report.performance_score ?? 0}
+                size={100}
+                thickness={4}
+                color={
+                  (report.performance_score ?? 0) >= 70
+                    ? 'success'
+                    : (report.performance_score ?? 0) >= 40
+                      ? 'warning'
+                      : 'error'
+                }
+              />
+              <Box
+                sx={{
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  position: 'absolute',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography variant="h4" component="div">
+                  {report.performance_score ?? '—'}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Typography variant="h6" gutterBottom>
+              Performance Score / 수행 점수
+            </Typography>
+
+            {/* Overall Assessment */}
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ maxWidth: 600, mx: 'auto' }}
+            >
+              {report.overall_assessment}
+            </Typography>
+
+            {/* Report date */}
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+              {new Date(report.created_at).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Typography>
+          </Paper>
+
+          {/* Metrics Grid - AC-046 */}
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            Key Metrics / 주요 지표
+          </Typography>
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            {Object.entries(report.metrics).map(([name, metric]) => (
+              <Grid item xs={6} md={3} key={name}>
+                <MetricCard name={name} metric={metric as MetricValue} />
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Key Moments - AC-045 */}
+          {report.stamps.length > 0 && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                Key Moments / 주요 순간
+              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 2,
+                  overflowX: 'auto',
+                  pb: 1,
+                  // Scrollbar styling
+                  '&::-webkit-scrollbar': {
+                    height: 6,
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    bgcolor: 'grey.200',
+                    borderRadius: 3,
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    bgcolor: 'grey.400',
+                    borderRadius: 3,
+                  },
+                }}
+              >
+                {report.stamps.map((stamp) => (
+                  <KeyMomentCard key={stamp.stamp_id} stamp={stamp} />
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* Strengths Section - AC-042 */}
+          <Accordion
+            expanded={expandedSections.strengths}
+            onChange={handleSectionToggle('strengths')}
+            sx={{ mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CheckCircleIcon color="success" />
+                <Typography variant="h6">
+                  Strengths / 강점
+                  <Chip
+                    label={report.strengths.length}
+                    size="small"
+                    sx={{ ml: 1, height: 20 }}
+                  />
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              {report.strengths.map((strength, index) => (
+                <StrengthCard key={index} strength={strength} />
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Weaknesses Section - AC-043 */}
+          <Accordion
+            expanded={expandedSections.weaknesses}
+            onChange={handleSectionToggle('weaknesses')}
+            sx={{ mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ReportProblemIcon color="warning" />
+                <Typography variant="h6">
+                  Areas for Improvement / 개선점
+                  <Chip
+                    label={report.weaknesses.length}
+                    size="small"
+                    sx={{ ml: 1, height: 20 }}
+                  />
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              {report.weaknesses.map((weakness, index) => (
+                <WeaknessCard key={index} weakness={weakness} />
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Recommendations Section - AC-044 */}
+          <Accordion
+            expanded={expandedSections.recommendations}
+            onChange={handleSectionToggle('recommendations')}
+            sx={{ mb: 3 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TipsAndUpdatesIcon color="primary" />
+                <Typography variant="h6">
+                  Recommendations / 권장 사항
+                  <Chip
+                    label={report.recommendations.length}
+                    size="small"
+                    sx={{ ml: 1, height: 20 }}
+                  />
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              {report.recommendations.map((rec, index) => (
+                <RecommendationCard key={index} recommendation={rec} />
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* AI Disclaimer - Required by product */}
+          <Paper
+            sx={{
+              p: 2,
+              bgcolor: 'grey.100',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 1.5,
+            }}
+          >
+            <InfoOutlinedIcon color="action" sx={{ mt: 0.3, flexShrink: 0 }} />
+            <Typography variant="body2" color="text.secondary">
+              {report.disclaimer}
+              <br />
+              <span style={{ fontSize: '0.9em' }}>
+                이 AI 분석은 훈련 목적으로만 제공되며, 전문 코칭을 대체하지 않습니다.
+                항상 적절한 감독 하에 훈련하세요.
+              </span>
+            </Typography>
+          </Paper>
+        </>
+      )}
+    </Container>
+  );
+}

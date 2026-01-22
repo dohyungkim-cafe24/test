@@ -1,0 +1,10 @@
+# Files Changed for F007 - LLM Strategic Analysis
+
+## Added
+backend/api/models/report.py
+backend/api/schemas/report.py
+backend/api/services/llm_analysis_service.py
+backend/tests/test_llm_analysis.py
+
+## Modified
+backend/api/services/database.py

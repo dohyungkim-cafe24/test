@@ -1,0 +1,570 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "generated_at": "2026-01-21T13:04:11Z",
+  "source_docs": {
+    "requirements_baseline": "docs/product/REQUIREMENTS_BASELINE.md",
+    "market_benchmark": "docs/product/MARKET_BENCHMARK.md",
+    "story_map": "docs/product/STORY_MAP.md",
+    "user_stories": "docs/product/USER_STORIES.md",
+    "ux_spec": "docs/ux/UX_SPEC.md",
+    "ux_contract": "docs/ux/UX_CONTRACT.md",
+    "design_system": "docs/ux/DESIGN_SYSTEM.md",
+    "prd": "docs/product/PRD.md"
+  },
+  "features": [
+    {
+      "id": "F001",
+      "name": "User Authentication",
+      "description": "OAuth-based authentication via Kakao and Google providers with session management",
+      "user_story": "US-001",
+      "user_stories": [
+        "US-001"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "web",
+      "tags": [
+        "ui",
+        "web",
+        "auth"
+      ],
+      "requires_screenshots": true,
+      "requires_ux_validation": true,
+      "requires_ux_judge": true,
+      "requires_browser_runtime": false,
+      "requires_visual_regression": false,
+      "security_sensitive": true,
+      "acceptance_criteria": [
+        "AC-001: Kakao OAuth login redirects and creates session on success",
+        "AC-002: Google OAuth login redirects and creates session on success",
+        "AC-003: Expired OAuth token prompts re-authentication without data loss",
+        "AC-004: Logout terminates session and redirects to landing page",
+        "AC-005: Unauthenticated access to protected routes redirects to login"
+      ],
+      "bdd_trace": [
+        "specs/bdd/auth.feature#OAuth login cancelled by user",
+        "specs/bdd/auth.feature#OAuth provider unavailable",
+        "specs/bdd/auth.feature#Session expiration prompts re-authentication",
+        "specs/bdd/auth.feature#Successful Google OAuth login",
+        "specs/bdd/auth.feature#Successful Kakao OAuth login",
+        "specs/bdd/auth.feature#Unauthenticated user redirected to login",
+        "specs/bdd/auth.feature#User logs out successfully"
+      ],
+      "evidence": {
+        "test_run_id": "20260121-135727-c8041a",
+        "tester_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-135727-c8041a/tester/attempts/20260121T135727Z-a050-test/deliverables/TESTER_REPORT.md",
+        "screenshots_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-135727-c8041a/tester/attempts/20260121T135727Z-a050-test/evidence/screenshots",
+        "ux_validation_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-135727-c8041a/tester/attempts/20260121T135727Z-a050-test/deliverables/UX_VERIFY.md",
+        "ux_verifier_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-135727-c8041a/tester/attempts/20260121T135727Z-a050-test/deliverables/UX_VERIFY.json",
+        "ux_judge_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-135727-c8041a/ux-judge/attempts/20260121T135727Z-0790-ux-judge/deliverables/UX_JUDGE.json",
+        "ux_judge_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-135727-c8041a/ux-judge/attempts/20260121T135727Z-0790-ux-judge/deliverables/UX_JUDGE.md",
+        "code_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-135353-482b1e/reviewer/attempts/20260121T135353Z-7350-review/deliverables/CODE_REVIEW.md",
+        "security_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-135353-482b1e/reviewer/attempts/20260121T135353Z-7350-review/deliverables/SECURITY_REVIEW.md",
+        "review_run_id": "20260121-135353-482b1e"
+      },
+      "dod_fingerprint": "v1:a0530311e89292cffbae61f89d5292b500670d63",
+      "dod_verified_at": "2026-01-21T14:15:08Z",
+      "implemented_at": "2026-01-21T14:15:08Z",
+      "last_tested_at": "2026-01-21T14:15:08Z"
+    },
+    {
+      "id": "F002",
+      "name": "Video Upload",
+      "description": "Video file upload with validation, progress tracking, and resumable uploads",
+      "user_story": "US-002",
+      "user_stories": [
+        "US-002"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "web",
+      "tags": [
+        "ui",
+        "web",
+        "upload"
+      ],
+      "requires_screenshots": true,
+      "requires_ux_validation": true,
+      "requires_ux_judge": true,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-006: Valid video file (MP4/MOV/WebM, <500MB, 1-3 min) uploads with progress indicator",
+        "AC-007: Upload complete navigates to subject selection",
+        "AC-008: File over 500MB shows size error message",
+        "AC-009: Video duration outside 1-3 min shows duration error",
+        "AC-010: Unsupported format shows format error message",
+        "AC-011: Network interruption resumes upload automatically",
+        "AC-012: Cancel upload discards partial upload"
+      ],
+      "bdd_trace": [
+        "specs/bdd/upload.feature#File exceeds maximum size limit",
+        "specs/bdd/upload.feature#Successful video upload with valid file",
+        "specs/bdd/upload.feature#Unsupported file format rejected",
+        "specs/bdd/upload.feature#Upload area shows empty state initially",
+        "specs/bdd/upload.feature#Upload resumes after network interruption",
+        "specs/bdd/upload.feature#Upload shows progress indicator",
+        "specs/bdd/upload.feature#User cancels upload in progress",
+        "specs/bdd/upload.feature#Video duration too long",
+        "specs/bdd/upload.feature#Video duration too short"
+      ],
+      "evidence": {
+        "test_run_id": "20260121-144145-ae51ad",
+        "tester_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/deliverables/TESTER_REPORT.md",
+        "screenshots_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/evidence/screenshots",
+        "ux_validation_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/deliverables/UX_VERIFY.md",
+        "ux_verifier_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/deliverables/UX_VERIFY.json",
+        "ux_judge_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/ux-judge/attempts/20260121T144151Z-ee7e-ux-judge/deliverables/UX_JUDGE.json",
+        "ux_judge_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/ux-judge/attempts/20260121T144151Z-ee7e-ux-judge/deliverables/UX_JUDGE.md",
+        "code_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-142752-dc05e2/reviewer/attempts/20260121T143845Z-9b8a-review-iter/deliverables/CODE_REVIEW.md",
+        "security_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-142752-dc05e2/reviewer/attempts/20260121T143845Z-9b8a-review-iter/deliverables/SECURITY_REVIEW.md",
+        "browser_attestation_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/deliverables/BROWSER_VERIFY.json",
+        "browser_verify_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/deliverables/BROWSER_VERIFY.json",
+        "browser_console_log": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/evidence/browser/console.jsonl",
+        "browser_network_log": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/evidence/browser/network.jsonl",
+        "review_run_id": "20260121-142752-dc05e2"
+      },
+      "dod_fingerprint": "v1:8f9b8a4c12d45fa39d1f2467d421f181444fde45",
+      "dod_verified_at": "2026-01-21T15:01:16Z",
+      "implemented_at": "2026-01-21T15:01:16Z",
+      "last_tested_at": "2026-01-21T15:01:16Z"
+    },
+    {
+      "id": "F003",
+      "name": "Subject Selection",
+      "description": "Select analysis subject from video thumbnails with visual confirmation",
+      "user_story": "US-003",
+      "user_stories": [
+        "US-003"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "web",
+      "tags": [
+        "ui",
+        "web"
+      ],
+      "requires_screenshots": true,
+      "requires_ux_validation": true,
+      "requires_ux_judge": true,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-013: Thumbnail grid displays after upload completes",
+        "AC-014: Tap on person highlights with selection indicator",
+        "AC-015: Confirm selection stores bounding box for tracking",
+        "AC-016: Selection can be changed before confirmation",
+        "AC-017: Single person auto-selected with confirm option"
+      ],
+      "bdd_trace": [
+        "specs/bdd/subject-selection.feature#No subjects detected in video",
+        "specs/bdd/subject-selection.feature#Single person auto-selected",
+        "specs/bdd/subject-selection.feature#Thumbnail extraction loading state",
+        "specs/bdd/subject-selection.feature#Thumbnail grid displays extracted frames",
+        "specs/bdd/subject-selection.feature#User changes selection before confirmation",
+        "specs/bdd/subject-selection.feature#User confirms subject selection",
+        "specs/bdd/subject-selection.feature#User selects subject from thumbnail"
+      ],
+      "evidence": {
+        "test_run_id": "20260121-152557-f0d69e",
+        "tester_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/tester/attempts/20260121T152557Z-2ca3-test/deliverables/TESTER_REPORT.md",
+        "screenshots_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/tester/attempts/20260121T152557Z-2ca3-test/evidence/screenshots",
+        "ux_validation_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/tester/attempts/20260121T152557Z-2ca3-test/deliverables/UX_VERIFY.md",
+        "ux_verifier_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/tester/attempts/20260121T152557Z-2ca3-test/deliverables/UX_VERIFY.json",
+        "ux_judge_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/ux-judge/attempts/20260121T152557Z-4356-ux-judge/deliverables/UX_JUDGE.json",
+        "ux_judge_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/ux-judge/attempts/20260121T152557Z-4356-ux-judge/deliverables/UX_JUDGE.md",
+        "code_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-151013-b52304/reviewer/attempts/20260121T151013Z-c1a6-review/deliverables/CODE_REVIEW.md",
+        "security_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-151013-b52304/reviewer/attempts/20260121T151013Z-c1a6-review/deliverables/SECURITY_REVIEW.md",
+        "browser_attestation_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/tester/attempts/20260121T152557Z-2ca3-test/deliverables/BROWSER_VERIFY.json",
+        "browser_verify_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/tester/attempts/20260121T152557Z-2ca3-test/deliverables/BROWSER_VERIFY.json",
+        "browser_console_log": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/tester/attempts/20260121T152557Z-2ca3-test/evidence/browser/console.jsonl",
+        "browser_network_log": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-152557-f0d69e/tester/attempts/20260121T152557Z-2ca3-test/evidence/browser/network.jsonl",
+        "review_run_id": "20260121-151013-b52304"
+      },
+      "dod_fingerprint": "v1:1e98b9dd327e94580eb2ffd8af2dcfb78084a603",
+      "dod_verified_at": "2026-01-21T15:37:06Z",
+      "implemented_at": "2026-01-21T15:37:06Z",
+      "last_tested_at": "2026-01-21T15:37:06Z"
+    },
+    {
+      "id": "F004",
+      "name": "Body Specification Input",
+      "description": "User physical attributes form with validation and persistence",
+      "user_story": "US-004",
+      "user_stories": [
+        "US-004"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "web",
+      "tags": [
+        "ui",
+        "web",
+        "form"
+      ],
+      "requires_screenshots": true,
+      "requires_ux_validation": true,
+      "requires_ux_judge": true,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-018: Height input accepts 100-250cm range",
+        "AC-019: Weight input accepts 30-200kg range",
+        "AC-020: Experience level dropdown with four options",
+        "AC-021: Stance selection between Orthodox and Southpaw",
+        "AC-022: Start Analysis enabled when all fields complete",
+        "AC-023: Invalid values show inline validation errors",
+        "AC-024: Body specs persisted and pre-filled on return"
+      ],
+      "bdd_trace": [
+        "specs/bdd/body-specs.feature#All fields required for submission",
+        "specs/bdd/body-specs.feature#Body specs pre-filled for returning user",
+        "specs/bdd/body-specs.feature#Height above maximum shows validation error",
+        "specs/bdd/body-specs.feature#Height below minimum shows validation error",
+        "specs/bdd/body-specs.feature#Invalid number format shows error",
+        "specs/bdd/body-specs.feature#User enters valid body specifications",
+        "specs/bdd/body-specs.feature#Weight above maximum shows validation error",
+        "specs/bdd/body-specs.feature#Weight below minimum shows validation error"
+      ],
+      "evidence": {
+        "test_run_id": "20260121-155015-bf5412",
+        "tester_report": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/deliverables/TESTER_REPORT.md",
+        "screenshots_dir": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/screenshots",
+        "ux_verifier_json": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/deliverables/UX_VERIFY.json",
+        "ux_judge_json": ".claude/state/runs/20260121-155015-bf5412/ux-judge/attempts/20260121T155015Z-f776-ux-judge/deliverables/UX_JUDGE.json",
+        "ux_judge_report": ".claude/state/runs/20260121-155015-bf5412/ux-judge/attempts/20260121T155015Z-f776-ux-judge/deliverables/UX_JUDGE.md",
+        "code_review_report": ".claude/state/runs/20260121-154651-265f61/reviewer/attempts/20260121T154651Z-a31d-review/deliverables/CODE_REVIEW.md",
+        "security_review_report": ".claude/state/runs/20260121-154651-265f61/reviewer/attempts/20260121T154651Z-a31d-review/deliverables/SECURITY_REVIEW.md",
+        "browser_attestation_json": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/deliverables/BROWSER_VERIFY.json",
+        "browser_verify_json": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/deliverables/BROWSER_VERIFY.json",
+        "browser_console_log": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/browser/console.jsonl",
+        "browser_network_log": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/browser/network.jsonl",
+        "review_run_id": "20260121-154651-265f61"
+      },
+      "dod_fingerprint": "v1:c8bc73399a8d13cf021e0cadf0e7ff799bed3909",
+      "dod_verified_at": "2026-01-21T22:35:31Z",
+      "implemented_at": "2026-01-21T22:35:31Z",
+      "last_tested_at": "2026-01-21T22:35:31Z"
+    },
+    {
+      "id": "F005",
+      "name": "Pose Estimation Processing",
+      "description": "MediaPipe-based skeletal coordinate extraction with status tracking",
+      "user_story": "US-005",
+      "user_stories": [
+        "US-005",
+        "US-006",
+        "US-007"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "backend",
+      "tags": [
+        "api",
+        "processing"
+      ],
+      "requires_screenshots": true,
+      "requires_ux_validation": false,
+      "requires_ux_judge": false,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-025: Video processed with 33-joint XYZ coordinate extraction",
+        "AC-026: Selected subject tracked across frames via bounding box",
+        "AC-027: Successful pose data stored in structured JSON",
+        "AC-028: Over 20% frame failure marks analysis as failed with guidance",
+        "AC-029: Processing progress logged and retrievable via status endpoint"
+      ],
+      "bdd_trace": [
+        "specs/bdd/processing.feature#Pose estimation extracts joint coordinates",
+        "specs/bdd/processing.feature#Pose estimation fails with poor video quality",
+        "specs/bdd/processing.feature#Processing status shows step progress",
+        "specs/bdd/processing.feature#Processing takes longer than expected",
+        "specs/bdd/processing.feature#Subject tracking maintains across frames"
+      ],
+      "evidence": {
+        "test_run_id": "20260121-225048-b20489",
+        "tester_report": ".claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/deliverables/TESTER_REPORT.md",
+        "screenshots_dir": ".claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/evidence/screenshots",
+        "code_review_report": ".claude/state/runs/20260121-224727-298129/reviewer/attempts/20260121T224727Z-eb3c-review/deliverables/CODE_REVIEW.md",
+        "security_review_report": ".claude/state/runs/20260121-224727-298129/reviewer/attempts/20260121T224727Z-eb3c-review/deliverables/SECURITY_REVIEW.md",
+        "browser_attestation_json": ".claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/deliverables/BROWSER_VERIFY.json",
+        "browser_verify_json": ".claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/deliverables/BROWSER_VERIFY.json",
+        "browser_console_log": ".claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/evidence/browser/console.jsonl",
+        "browser_network_log": ".claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/evidence/browser/network.jsonl",
+        "review_run_id": "20260121-224727-298129"
+      },
+      "dod_fingerprint": "v1:d3afd3f02dec48dd4474fbc11d6d2796c3715750",
+      "dod_verified_at": "2026-01-21T22:56:46Z",
+      "implemented_at": "2026-01-21T22:56:46Z",
+      "last_tested_at": "2026-01-21T22:56:46Z"
+    },
+    {
+      "id": "F006",
+      "name": "Stamp Generation",
+      "description": "Automatic detection and timestamping of strikes and defensive actions",
+      "user_story": "US-006",
+      "user_stories": [
+        "US-005",
+        "US-006",
+        "US-007"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "backend",
+      "tags": [
+        "api",
+        "processing"
+      ],
+      "requires_screenshots": false,
+      "requires_ux_validation": false,
+      "requires_ux_judge": false,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-030: Strikes detected by arm velocity and trajectory patterns",
+        "AC-031: Defensive actions detected by torso and arm positioning",
+        "AC-032: Each action timestamped with frame number and confidence",
+        "AC-033: Stamps stored with type, timestamp, side, and confidence",
+        "AC-034: No actions detected proceeds with generic feedback"
+      ],
+      "bdd_trace": [
+        "specs/bdd/processing.feature#Defensive action detection identifies guards",
+        "specs/bdd/processing.feature#No significant actions detected",
+        "specs/bdd/processing.feature#Stamps include confidence scores",
+        "specs/bdd/processing.feature#Strike detection identifies punch types"
+      ],
+      "evidence": {
+        "test_run_id": "20260121-230957-f10ba9",
+        "tester_report": ".claude/state/runs/20260121-230957-f10ba9/tester/attempts/20260121T230958Z-b55f-test/deliverables/TESTER_REPORT.md",
+        "code_review_report": ".claude/state/runs/20260121-230711-89d5c9/reviewer/attempts/20260121T230711Z-f6c0-review/deliverables/CODE_REVIEW.md",
+        "security_review_report": ".claude/state/runs/20260121-230711-89d5c9/reviewer/attempts/20260121T230711Z-f6c0-review/deliverables/SECURITY_REVIEW.md",
+        "review_run_id": "20260121-230711-89d5c9"
+      },
+      "dod_fingerprint": "v1:4d971de87405091d6dc8fe0ccfa840b0bad5a2c6",
+      "dod_verified_at": "2026-01-21T23:12:45Z",
+      "implemented_at": "2026-01-21T23:12:45Z",
+      "last_tested_at": "2026-01-21T23:12:45Z"
+    },
+    {
+      "id": "F007",
+      "name": "LLM Strategic Analysis",
+      "description": "AI-generated coaching feedback based on pose data and stamps",
+      "user_story": "US-007",
+      "user_stories": [
+        "US-005",
+        "US-006",
+        "US-007"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "backend",
+      "tags": [
+        "api",
+        "llm"
+      ],
+      "requires_screenshots": false,
+      "requires_ux_validation": false,
+      "requires_ux_judge": false,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-035: Pose data and stamps formatted as JSON for LLM",
+        "AC-036: Derived metrics calculated (reach ratio, tilt, guard speed, frequency)",
+        "AC-037: LLM generates 3-5 strengths, weaknesses, recommendations each",
+        "AC-038: Analysis adapts to user experience level",
+        "AC-039: LLM failure retries 3 times with exponential backoff",
+        "AC-040: Analysis includes AI disclaimer"
+      ],
+      "bdd_trace": [
+        "specs/bdd/processing.feature#Analysis adapts to beginner experience level",
+        "specs/bdd/processing.feature#Analysis adapts to competitive experience level",
+        "specs/bdd/processing.feature#LLM API exhausts retries",
+        "specs/bdd/processing.feature#LLM API failure triggers retry",
+        "specs/bdd/processing.feature#LLM generates strategic analysis"
+      ],
+      "evidence": {
+        "test_run_id": "20260121-232423-8f161c",
+        "tester_report": ".claude/state/runs/20260121-232423-8f161c/tester/attempts/20260121T232423Z-8b75-test/deliverables/TESTER_REPORT.md",
+        "code_review_report": ".claude/state/runs/20260121-232144-b58a90/reviewer/attempts/20260121T232144Z-b136-review/deliverables/CODE_REVIEW.md",
+        "security_review_report": ".claude/state/runs/20260121-232144-b58a90/reviewer/attempts/20260121T232144Z-b136-review/deliverables/SECURITY_REVIEW.md",
+        "review_run_id": "20260121-232144-b58a90"
+      },
+      "dod_fingerprint": "v1:3a9eca1ca1d54ecbbe91cb567576f399e6c320ac",
+      "dod_verified_at": "2026-01-21T23:27:23Z",
+      "implemented_at": "2026-01-21T23:27:23Z",
+      "last_tested_at": "2026-01-21T23:27:23Z"
+    },
+    {
+      "id": "F008",
+      "name": "Report Display",
+      "description": "Analysis report with metrics visualization and recommendations",
+      "user_story": "US-008",
+      "user_stories": [
+        "US-008"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "web",
+      "tags": [
+        "ui",
+        "web"
+      ],
+      "requires_screenshots": true,
+      "requires_ux_validation": true,
+      "requires_ux_judge": true,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-041: Summary section displays overall assessment",
+        "AC-042: Strengths section shows 3-5 observations",
+        "AC-043: Weaknesses section shows 3-5 improvement areas",
+        "AC-044: Recommendations section shows 3-5 actionable items",
+        "AC-045: Key moments section with timestamp links",
+        "AC-046: Metrics displayed with visual indicators",
+        "AC-047: Report page loads within 1.5 seconds",
+        "AC-048: Report responsive on mobile and desktop"
+      ],
+      "bdd_trace": [
+        "specs/bdd/report.feature#Report displays correctly on desktop viewport",
+        "specs/bdd/report.feature#Report displays correctly on mobile viewport",
+        "specs/bdd/report.feature#Report displays key moments with timestamps",
+        "specs/bdd/report.feature#Report displays metrics with visualizations",
+        "specs/bdd/report.feature#Report displays recommendations section",
+        "specs/bdd/report.feature#Report displays strengths section",
+        "specs/bdd/report.feature#Report displays summary section",
+        "specs/bdd/report.feature#Report displays weaknesses section",
+        "specs/bdd/report.feature#Report includes AI disclaimer",
+        "specs/bdd/report.feature#Report loads within performance target"
+      ],
+      "evidence": {
+        "test_run_id": "20260121-233958-4a33b3",
+        "tester_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/deliverables/TESTER_REPORT.md",
+        "screenshots_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/evidence/screenshots",
+        "ux_validation_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/deliverables/UX_VERIFY.md",
+        "ux_verifier_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/deliverables/UX_VERIFY.json",
+        "ux_judge_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/ux-judge/attempts/20260121T233958Z-0848-ux-judge/deliverables/UX_JUDGE.json",
+        "ux_judge_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/ux-judge/attempts/20260121T233958Z-0848-ux-judge/deliverables/UX_JUDGE.md",
+        "code_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233556-9f0721/reviewer/attempts/20260121T233556Z-faa6-review/deliverables/CODE_REVIEW.md",
+        "security_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233556-9f0721/reviewer/attempts/20260121T233556Z-faa6-review/deliverables/SECURITY_REVIEW.md",
+        "browser_attestation_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/deliverables/BROWSER_VERIFY.json",
+        "browser_verify_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/deliverables/BROWSER_VERIFY.json",
+        "browser_console_log": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/evidence/browser/console.jsonl",
+        "browser_network_log": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/evidence/browser/network.jsonl",
+        "visual_regression_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/deliverables/VISUAL_REGRESSION.json",
+        "review_run_id": "20260121-233556-9f0721"
+      },
+      "dod_fingerprint": "v1:d967fe61976293e56c274f5be4da3b7db2825880",
+      "dod_verified_at": "2026-01-21T23:52:02Z",
+      "implemented_at": "2026-01-21T23:52:02Z",
+      "last_tested_at": "2026-01-21T23:52:02Z"
+    },
+    {
+      "id": "F009",
+      "name": "Report Sharing",
+      "description": "Share analysis reports via unique public URLs",
+      "user_story": "US-009",
+      "user_stories": [
+        "US-009"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": true,
+      "category": "web",
+      "tags": [
+        "ui",
+        "web"
+      ],
+      "requires_screenshots": true,
+      "requires_ux_validation": true,
+      "requires_ux_judge": true,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-049: Share button shows on report page (default private)",
+        "AC-050: Enable sharing generates unique URL",
+        "AC-051: Shared URL accessible without authentication",
+        "AC-052: Copy Link copies to clipboard with confirmation",
+        "AC-053: Shared report shows social preview cards",
+        "AC-054: Disabling sharing invalidates the URL",
+        "AC-055: Re-enabling generates new unique URL"
+      ],
+      "bdd_trace": [
+        "specs/bdd/sharing.feature#Disabled share link returns error",
+        "specs/bdd/sharing.feature#Report shows share button in private state",
+        "specs/bdd/sharing.feature#Shared report accessible without login",
+        "specs/bdd/sharing.feature#Shared report displays social preview",
+        "specs/bdd/sharing.feature#User copies share link to clipboard",
+        "specs/bdd/sharing.feature#User disables sharing",
+        "specs/bdd/sharing.feature#User enables sharing and gets unique URL",
+        "specs/bdd/sharing.feature#User re-enables sharing gets new URL"
+      ],
+      "evidence": {
+        "test_run_id": "20260122-000633-820599",
+        "tester_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/deliverables/TESTER_REPORT.md",
+        "screenshots_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/evidence/screenshots",
+        "ux_validation_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/deliverables/UX_VERIFY.md",
+        "ux_verifier_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/deliverables/UX_VERIFY.json",
+        "ux_judge_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/ux-judge/attempts/20260122T000633Z-7820-ux-judge/deliverables/UX_JUDGE.json",
+        "ux_judge_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/ux-judge/attempts/20260122T000633Z-7820-ux-judge/deliverables/UX_JUDGE.md",
+        "code_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000317-042ce7/reviewer/attempts/20260122T000317Z-5e73-review/deliverables/CODE_REVIEW.md",
+        "security_review_report": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000317-042ce7/reviewer/attempts/20260122T000317Z-5e73-review/deliverables/SECURITY_REVIEW.md",
+        "browser_attestation_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/deliverables/BROWSER_VERIFY.json",
+        "browser_verify_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/deliverables/BROWSER_VERIFY.json",
+        "browser_console_log": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/evidence/browser/console.jsonl",
+        "browser_network_log": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/evidence/browser/network.jsonl",
+        "visual_regression_json": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260122-000633-820599/tester/attempts/20260122T000633Z-c9c4-test/deliverables/VISUAL_REGRESSION.json",
+        "review_run_id": "20260122-000317-042ce7"
+      },
+      "dod_fingerprint": "v1:a8d1eab241df566d9d061975bcf511edb6798bc4",
+      "dod_verified_at": "2026-01-22T00:14:09Z",
+      "implemented_at": "2026-01-22T00:14:09Z",
+      "last_tested_at": "2026-01-22T00:14:09Z"
+    },
+    {
+      "id": "F010",
+      "name": "Report History Dashboard",
+      "description": "Dashboard listing past analysis reports with navigation and deletion",
+      "user_story": "US-010",
+      "user_stories": [
+        "US-010"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "passes": false,
+      "category": "web",
+      "tags": [
+        "ui",
+        "web"
+      ],
+      "requires_screenshots": true,
+      "requires_ux_validation": true,
+      "requires_ux_judge": true,
+      "security_sensitive": false,
+      "acceptance_criteria": [
+        "AC-056: Dashboard lists reports sorted by date descending",
+        "AC-057: List items show thumbnail, date, summary indicator",
+        "AC-058: Clicking report navigates to full view",
+        "AC-059: Delete report shows confirmation dialog",
+        "AC-060: Empty state shows upload CTA"
+      ],
+      "bdd_trace": [
+        "specs/bdd/dashboard.feature#Dashboard displays report list sorted by date",
+        "specs/bdd/dashboard.feature#Dashboard loading state shows skeletons",
+        "specs/bdd/dashboard.feature#Dashboard shows empty state for new user",
+        "specs/bdd/dashboard.feature#Report list item shows thumbnail and summary",
+        "specs/bdd/dashboard.feature#User deletes report with confirmation",
+        "specs/bdd/dashboard.feature#User navigates to report from list"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 9,
+    "failed": 1,
+    "progress_pct": 90,
+    "next_feature": "F010",
+    "progress": "90%"
+  }
+}

@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /private/tmp/test-venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 21 items
+
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_bounding_box_valid PASSED [  4%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_bounding_box_negative_coordinates_rejected PASSED [  9%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_bounding_box_zero_dimensions_rejected PASSED [ 14%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_detected_person_valid PASSED [ 19%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_detected_person_confidence_range PASSED [ 23%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_thumbnail_response_valid PASSED [ 28%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_thumbnails_response_valid PASSED [ 33%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_subject_select_request_valid PASSED [ 38%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectSchemas::test_subject_select_response_valid PASSED [ 42%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectService::test_get_thumbnails_returns_frames PASSED [ 47%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectService::test_get_thumbnails_processing_state PASSED [ 52%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectService::test_get_thumbnails_no_persons_detected PASSED [ 57%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectService::test_select_subject_stores_bounding_box PASSED [ 61%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectService::test_select_subject_updates_existing_selection PASSED [ 66%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectService::test_single_person_auto_selected PASSED [ 71%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectService::test_select_subject_invalid_person_id PASSED [ 76%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectRouter::test_get_thumbnails_requires_auth PASSED [ 80%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectRouter::test_get_thumbnails_video_not_found PASSED [ 85%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectRouter::test_get_thumbnails_success PASSED [ 90%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectRouter::test_select_subject_success PASSED [ 95%]
+projects/punch-analytics/backend/tests/test_subject.py::TestSubjectRouter::test_select_subject_person_not_found PASSED [100%]
+
+============================== 21 passed in 0.35s ==============================

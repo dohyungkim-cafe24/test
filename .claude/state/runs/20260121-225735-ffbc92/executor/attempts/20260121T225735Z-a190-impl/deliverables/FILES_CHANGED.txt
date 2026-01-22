@@ -1,0 +1,18 @@
+# Files Changed - F006 Stamp Generation
+
+## Added
+backend/api/models/stamp.py
+backend/api/schemas/stamp.py
+backend/api/services/stamp_detection_service.py
+backend/api/services/stamp_generation_service.py
+backend/tests/test_stamp_generation.py
+
+## Modified
+(none)
+
+## Summary
+5 new files added implementing the stamp generation feature:
+- 1 model file (Stamp, ActionType, Side)
+- 1 schema file (StampCreate, StampResponse, StampListResponse, StampSummary)
+- 2 service files (detection algorithms + orchestration)
+- 1 test file (24 comprehensive tests)

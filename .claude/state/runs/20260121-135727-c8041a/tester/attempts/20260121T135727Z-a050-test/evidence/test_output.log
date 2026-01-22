@@ -1,0 +1,31 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /private/tmp/punch-test-venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 20 items
+
+tests/test_auth.py::TestKakaoOAuth::test_kakao_auth_redirects_to_provider PASSED [  5%]
+tests/test_auth.py::TestKakaoOAuth::test_kakao_auth_validates_redirect_uri PASSED [ 10%]
+tests/test_auth.py::TestKakaoOAuth::test_kakao_callback_with_valid_code_creates_session PASSED [ 15%]
+tests/test_auth.py::TestKakaoOAuth::test_kakao_callback_validates_csrf_state PASSED [ 20%]
+tests/test_auth.py::TestKakaoOAuth::test_kakao_callback_with_invalid_code_returns_error PASSED [ 25%]
+tests/test_auth.py::TestKakaoOAuth::test_kakao_callback_preserves_redirect_uri PASSED [ 30%]
+tests/test_auth.py::TestGoogleOAuth::test_google_auth_redirects_to_provider PASSED [ 35%]
+tests/test_auth.py::TestGoogleOAuth::test_google_callback_with_valid_code_creates_session PASSED [ 40%]
+tests/test_auth.py::TestSessionManagement::test_refresh_token_returns_new_access_token PASSED [ 45%]
+tests/test_auth.py::TestSessionManagement::test_refresh_with_invalid_token_returns_401 PASSED [ 50%]
+tests/test_auth.py::TestSessionManagement::test_refresh_without_token_returns_401 PASSED [ 55%]
+tests/test_auth.py::TestSessionManagement::test_logout_clears_session PASSED [ 60%]
+tests/test_auth.py::TestAuthGuard::test_protected_route_without_token_returns_401 PASSED [ 65%]
+tests/test_auth.py::TestAuthGuard::test_protected_route_with_valid_token_returns_user PASSED [ 70%]
+tests/test_auth.py::TestAuthGuard::test_protected_route_with_expired_token_returns_401 PASSED [ 75%]
+tests/test_auth.py::TestOAuthErrorHandling::test_kakao_callback_cancelled_by_user PASSED [ 80%]
+tests/test_auth.py::TestOAuthErrorHandling::test_google_callback_missing_state_returns_error PASSED [ 85%]
+tests/test_auth.py::TestSecurityFixes::test_b1_csrf_state_validated_server_side PASSED [ 90%]
+tests/test_auth.py::TestSecurityFixes::test_m1_access_token_not_in_query_param PASSED [ 95%]
+tests/test_auth.py::TestSecurityFixes::test_m1_redirect_uri_validated PASSED [100%]
+
+============================== 20 passed in 0.52s ==============================

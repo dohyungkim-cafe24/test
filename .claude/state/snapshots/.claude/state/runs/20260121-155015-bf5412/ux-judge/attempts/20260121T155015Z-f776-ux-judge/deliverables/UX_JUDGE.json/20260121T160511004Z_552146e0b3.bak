@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.1",
+  "feature_id": "F004",
+  "verdict": "FAIL",
+  "visual_evidence": {
+    "reviewed": true,
+    "screenshots_dir": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/screenshots",
+    "screenshots": [
+      {
+        "path": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/screenshots/home_1280x800_20260121_235353.png",
+        "observed": "Landing page with bilingual copy (Korean + English), primary CTA button, correct M3 styling with primary blue color scheme",
+        "assertions": [
+          "Korean localization present",
+          "Primary CTA visible",
+          "M3 color scheme applied"
+        ],
+        "status": "PASS"
+      },
+      {
+        "path": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/screenshots/upload_1280x800_20260121_235353.png",
+        "observed": "Shows 'Redirecting to login...' message only - not the actual upload page or body specs form",
+        "assertions": [
+          "Not a valid body specs form screenshot"
+        ],
+        "status": "FAIL"
+      },
+      {
+        "path": ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/screenshots/subject_selection_1280x800.png",
+        "observed": "Placeholder gradient image, not actual UI screenshot - appears to be test artifact or corrupted file",
+        "assertions": [
+          "Not a valid UI screenshot"
+        ],
+        "status": "FAIL"
+      }
+    ],
+    "notes": "CRITICAL: No F004 Body Specification Input page screenshots exist. The screenshots directory contains only landing page and placeholder images. The UX_CONTRACT requires 'Journey Screenshots: Screenshots of each screen in primary flows' and 'State Screenshots: Each UI state captured per UI_STATES.md'. Body specs form UI cannot be visually validated without runtime screenshots."
+  },
+  "violations": [
+    {
+      "id": "UXJ-001",
+      "severity": "BLOCKER",
+      "contract_ref": "UX_CONTRACT.md > Evidence > Required Evidence for Launch > Journey Screenshots",
+      "description": "Missing body specification form (F004) screenshot. Contract requires 'Screenshots of each screen in primary flows' covering 'All 10 user stories'. US-004 (Body Spec Input) has zero screenshots.",
+      "evidence": [
+        ".claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/screenshots/ (no body-spec*.png found)"
+      ],
+      "fix": {
+        "summary": "Capture runtime screenshots of body specification form",
+        "steps": [
+          "1. Start the development server (frontend + backend)",
+          "2. Navigate to /body-specs/{videoId} with valid auth and videoId",
+          "3. Capture screenshots: (a) empty form state, (b) form with pre-filled data, (c) validation error state (red borders), (d) submit button disabled state, (e) submit in progress state",
+          "4. Save to evidence/screenshots/ with naming: body_specs_{state}_{viewport}.png"
+        ],
+        "verify": [
+          "Re-run UX verifier to confirm screenshot presence",
+          "Re-run UX judge to semantically validate the screenshots"
+        ]
+      }
+    },
+    {
+      "id": "UXJ-002",
+      "severity": "BLOCKER",
+      "contract_ref": "UX_CONTRACT.md > Evidence > State Screenshots",
+      "description": "Missing validation error state screenshots for body specs form. Contract requires 'Each UI state (loading/empty/error/success) captured'. UI_STATES.md specifies: height/weight validation with red border + error icon must be demonstrated.",
+      "evidence": [
+        "UI_STATES.md > Validation > Form Field Validation (US-004) defines required states",
+        "No validation error screenshots exist in evidence/screenshots/"
+      ],
+      "fix": {
+        "summary": "Capture validation error state screenshots",
+        "steps": [
+          "1. Navigate to body specs form",
+          "2. Enter invalid height (e.g., 50 or 300) and blur field",
+          "3. Screenshot showing red border and error message",
+          "4. Repeat for weight field with invalid value",
+          "5. Screenshot showing 'Start Analysis' button disabled"
+        ],
+        "verify": [
+          "Confirm red border visible in screenshot",
+          "Confirm Korean + English error messages visible"
+        ]
+      }
+    }
+  ],
+  "notes": "Code implementation review (frontend/src/app/(protected)/body-specs/[videoId]/page.tsx) shows correct M3 MUI components, bilingual copy, validation logic matching contract (100-250cm height, 30-200kg weight, 4 experience levels, 2 stance options), and pre-fill support (AC-024). Backend tests 24/24 PASS. However, UX contract explicitly requires visual evidence - code review alone cannot substitute for runtime screenshot verification per UX_CONTRACT.md Evidence section.",
+  "created_at_utc": "2026-01-22T00:15:00Z"
+}

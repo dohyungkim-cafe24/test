@@ -1,0 +1,12 @@
+# Files Changed for F005 - Pose Estimation Processing
+
+## New Files (added)
+backend/api/models/analysis.py
+backend/api/schemas/analysis.py
+backend/api/services/processing_service.py
+backend/api/routers/processing.py
+backend/tests/test_processing.py
+
+## Modified Files (updated)
+backend/api/main.py
+backend/api/services/database.py

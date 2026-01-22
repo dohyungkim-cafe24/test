@@ -1,0 +1,12 @@
+# F003 Subject Selection - Files Changed
+
+## Added
+backend/api/schemas/subject.py
+backend/api/models/subject.py
+backend/api/services/subject_service.py
+backend/api/routers/subject.py
+backend/tests/test_subject.py
+
+## Modified
+backend/api/main.py
+backend/api/services/database.py

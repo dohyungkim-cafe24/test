@@ -1,0 +1,53 @@
+# ARCHITECTURE — TEMPLATE
+
+> Owner: architect
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/MARKET_BENCHMARK.md
+- docs/product/STORY_MAP.md (Launch scope)
+- features.json
+- specs/bdd/TRACEABILITY.json
+- specs/bdd/BDD_INDEX.json
+- docs/ux/UX_CONTRACT.md
+- docs/ux/DESIGN_SYSTEM.md
+
+---
+
+## Feature annotations (recommended)
+
+When documenting decisions that are specific to a feature (component touchpoints, tradeoffs, security/observability), tag them with the feature id:
+
+Example:
+
+- `### @F### Service boundary change`
+- `- @F### Observability: emit metric ...`
+
+These tags are used by the Feature Packet generator to surface architecture outputs to executor/tester.
+
+---
+
+## Overview
+
+PLACEHOLDER
+
+## Components
+
+PLACEHOLDER
+
+## Trade-offs
+
+PLACEHOLDER
+
+## Observability
+
+PLACEHOLDER
+
+## Security
+
+PLACEHOLDER

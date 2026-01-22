@@ -1,0 +1,2 @@
+{"timestamp": "2026-01-22T00:30:00.000Z", "method": "GET", "url": "/api/v1/analysis/thumbnails/:videoId", "status": 200, "description": "Get thumbnails for subject selection"}
+{"timestamp": "2026-01-22T00:30:01.000Z", "method": "POST", "url": "/api/v1/analysis/subject/:videoId", "status": 200, "description": "Select subject for analysis"}

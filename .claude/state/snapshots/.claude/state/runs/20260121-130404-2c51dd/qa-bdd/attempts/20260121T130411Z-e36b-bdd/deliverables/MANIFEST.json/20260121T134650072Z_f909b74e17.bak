@@ -1,0 +1,277 @@
+{
+  "contract_version": "1.6.8",
+  "stage": "bdd",
+  "agent": "qa-bdd",
+  "write_once": false,
+  "deliverables": [
+    {
+      "kind": "features_merge",
+      "src": "features.json",
+      "src_patch": "",
+      "dst": "features.json",
+      "required": true,
+      "required_tokens": []
+    },
+    {
+      "kind": "file",
+      "src": "TRACEABILITY.json",
+      "src_patch": "",
+      "dst": "specs/bdd/TRACEABILITY.json",
+      "required": true,
+      "required_tokens": []
+    },
+    {
+      "kind": "file",
+      "src": "TRACEABILITY.md",
+      "src_patch": "TRACEABILITY.patch.json",
+      "dst": "specs/bdd/TRACEABILITY.md",
+      "required": false,
+      "required_tokens": [
+        "Inputs",
+        "Traceability",
+        "US-",
+        "@F"
+      ]
+    },
+    {
+      "kind": "glob_latest_attempt",
+      "glob": "*.feature",
+      "dst_dir": "specs/bdd",
+      "required": true,
+      "required_tokens": [],
+      "placement": "Put matching files under deliverables/ (recommended). publish may also detect deliverables/bdd/ and deliverables/specs/bdd/ for .feature files."
+    }
+  ],
+  "traceability_gate": {
+    "enabled_from_stage": "bdd",
+    "require_traceability_yaml": true,
+    "require_feature_tags": true,
+    "require_launch_coverage": true,
+    "require_p0_coverage": false,
+    "launch_scope_source": "docs/product/STORY_MAP.md#Launch"
+  },
+  "stage_inputs": {
+    "discover": [
+      "docs/DOC_CONTRACT.md",
+      "(user prompt: captured in run context)"
+    ],
+    "ux": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "docs/product/PRD.md",
+      "(optional) docs/product/PERSONAS.md",
+      "(optional) docs/product/USER_STORIES.md",
+      "(optional) docs/ux/INSIGHTS.md",
+      "(optional) docs/ux/RISKS_AND_ASSUMPTIONS.md"
+    ],
+    "bdd": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "(optional) docs/product/USER_STORIES.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/UI_STATES.md",
+      "docs/ux/COPY.md"
+    ],
+    "arch": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "specs/bdd/BDD_INDEX.json"
+    ],
+    "plan": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/UX_REPORT.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/UI_STATES.md",
+      "docs/ux/COPY.md",
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md",
+      "specs/bdd/BDD_INDEX.json"
+    ],
+    "build": [
+      "plan.json",
+      "features.json",
+      "(optional) specs/bdd/BDD_INDEX.json",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/design_tokens.json",
+      "docs/ux/UI_STATES.md",
+      "(optional) docs/ux/UX_DIGEST.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/COPY.md",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md"
+    ],
+    "test": [
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/design_tokens.json",
+      "docs/ux/UI_STATES.md",
+      "(optional) docs/ux/UX_DIGEST.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/COPY.md"
+    ],
+    "release": [
+      "features.json",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/operations/RUNBOOK.md",
+      "docs/operations/RELEASE_NOTES.md",
+      "(evidence) HANDOFF.md (project root)",
+      "(evidence) QUALITY_AUDIT.md (quality-auditor run)"
+    ],
+    "quality": [
+      "features.json",
+      "(optional) specs/bdd/BDD_INDEX.json",
+      "docs/engineering/RISK_REGISTER.md",
+      "(optional) docs/engineering/THREAT_MODEL.md",
+      "(optional) docs/engineering/SECURITY_REVIEW.md",
+      "(optional) docs/engineering/OPERABILITY.md",
+      "(optional) docs/adr/ADR_INDEX.json",
+      "docs/** (canonical)",
+      "specs/** (canonical)",
+      "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+    ]
+  },
+  "stage_inputs_by_agent": {
+    "build": {
+      "executor": [
+        "plan.json",
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md",
+        "(optional) docs/ux/UX_DIGEST.md",
+        "docs/ux/UX_SPEC.md",
+        "docs/ux/IA_MAP.md",
+        "docs/ux/COPY.md",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ],
+      "reviewer": [
+        "plan.json",
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ]
+    },
+    "test": {
+      "tester": [
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md",
+        "(optional) docs/ux/UX_DIGEST.md",
+        "docs/ux/UX_SPEC.md",
+        "docs/ux/IA_MAP.md",
+        "docs/ux/COPY.md"
+      ],
+      "ux-validator": [
+        "features.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md"
+      ],
+      "ux-judge": [
+        "features.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md"
+      ]
+    },
+    "quality": {
+      "*": [
+        "features.json",
+        "docs/engineering/RISK_REGISTER.md",
+        "(optional) docs/engineering/THREAT_MODEL.md",
+        "(optional) docs/engineering/SECURITY_REVIEW.md",
+        "(optional) docs/engineering/OPERABILITY.md",
+        "(optional) docs/adr/ADR_INDEX.json",
+        "docs/** (canonical)",
+        "specs/** (canonical)",
+        "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+      ],
+      "quality-auditor": [
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/engineering/RISK_REGISTER.md",
+        "(optional) docs/engineering/THREAT_MODEL.md",
+        "(optional) docs/engineering/SECURITY_REVIEW.md",
+        "(optional) docs/engineering/OPERABILITY.md",
+        "(optional) docs/adr/ADR_INDEX.json",
+        "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+      ]
+    },
+    "arch": {
+      "architect": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json"
+      ],
+      "security-architect": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json"
+      ]
+    },
+    "plan": {
+      "tech-lead": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/product/STORY_MAP.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ]
+    }
+  },
+  "attempt_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-130404-2c51dd/qa-bdd/attempts/20260121T130411Z-e36b-bdd"
+}

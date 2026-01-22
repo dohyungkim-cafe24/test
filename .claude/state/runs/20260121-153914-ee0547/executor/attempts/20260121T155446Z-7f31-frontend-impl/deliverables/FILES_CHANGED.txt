@@ -1,0 +1,7 @@
+# Files Changed for F004 Body Specification Frontend
+
+## Added
+frontend/src/lib/body-specs/api.ts
+frontend/src/lib/body-specs/index.ts
+frontend/src/lib/body-specs/__tests__/api.test.ts
+frontend/src/app/(protected)/body-specs/[videoId]/page.tsx

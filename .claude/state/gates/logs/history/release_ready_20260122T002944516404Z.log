@@ -1,0 +1,12 @@
+# gate: release_ready
+# utc: 20260122T002944516404Z
+# stage: test
+# run: 20260122-002802-5a6cdd
+# cmd: python3 .claude/scripts/release_ready.py --project /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics --write /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/gates/release_ready.json
+
+RELEASE_NOT_READY
+- HANDOFF.md (publish to project root preferred)
+- QUALITY_AUDIT.md (run quality-auditor stage 'quality')
+- SYSTEM_E2E evidence missing (run /agi-e2e → writes system_e2e_latest.json; auto-scaffolds config if missing)
+
+# exit_code: 2

@@ -1,0 +1,40 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=function
+
+collected 8 items
+
+tests/test_reports.py::TestGetReportEndpoint::test_get_report_success ERROR [ 12%]
+tests/test_reports.py::TestGetReportEndpoint::test_get_report_includes_key_moments ERROR [ 25%]
+tests/test_reports.py::TestGetReportEndpoint::test_get_report_includes_metrics ERROR [ 37%]
+tests/test_reports.py::TestGetReportEndpoint::test_get_report_includes_disclaimer ERROR [ 50%]
+tests/test_reports.py::TestGetReportEndpoint::test_get_report_not_found ERROR [ 62%]
+tests/test_reports.py::TestGetReportEndpoint::test_get_report_unauthorized ERROR [ 75%]
+tests/test_reports.py::TestGetReportEndpoint::test_get_report_forbidden_wrong_owner ERROR [ 87%]
+tests/test_reports.py::TestReportService::test_get_report_validates_ownership PASSED [100%]
+
+==================================== ERRORS ====================================
+All TestGetReportEndpoint tests failed at setup with error:
+ValueError: the greenlet library is required to use this function. No module named 'greenlet'
+
+The error occurs during app lifespan startup when trying to initialize the database:
+- api/main.py:29: in lifespan -> await init_db()
+- api/services/database.py:79: in init_db -> async with engine.begin() as conn:
+- SQLAlchemy async requires greenlet for asyncio support
+
+=========================== short test summary info ============================
+ERROR tests/test_reports.py::TestGetReportEndpoint::test_get_report_success
+ERROR tests/test_reports.py::TestGetReportEndpoint::test_get_report_includes_key_moments
+ERROR tests/test_reports.py::TestGetReportEndpoint::test_get_report_includes_metrics
+ERROR tests/test_reports.py::TestGetReportEndpoint::test_get_report_includes_disclaimer
+ERROR tests/test_reports.py::TestGetReportEndpoint::test_get_report_not_found
+ERROR tests/test_reports.py::TestGetReportEndpoint::test_get_report_unauthorized
+ERROR tests/test_reports.py::TestGetReportEndpoint::test_get_report_forbidden_wrong_owner
+========================= 1 passed, 7 errors in 1.48s ==========================
+
+ROOT CAUSE: Missing 'greenlet' dependency required by SQLAlchemy async.
+PARTIAL PASS: 1/8 tests passed (TestReportService.test_get_report_validates_ownership)

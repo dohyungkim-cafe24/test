@@ -1,0 +1,17 @@
+# Files Changed - F001 Security Fixes
+
+## New Files
+backend/api/services/database.py
+backend/api/services/state_store.py
+backend/api/services/user_service.py
+backend/api/services/token_service.py
+
+## Modified Files
+backend/api/services/oauth_service.py
+backend/api/routers/auth.py
+backend/api/config.py
+backend/api/main.py
+backend/requirements.txt
+backend/tests/conftest.py
+backend/tests/test_auth.py
+frontend/src/lib/auth/context.tsx

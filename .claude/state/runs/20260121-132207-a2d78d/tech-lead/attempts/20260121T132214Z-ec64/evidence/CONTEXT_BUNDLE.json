@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "schema_version": 1,
+  "project": "punch-analytics",
+  "generated_at": "2026-01-21T13:22:14Z",
+  "stage": "plan",
+  "agent": "tech-lead",
+  "inputs": [
+    "docs/product/REQUIREMENTS_BASELINE.md",
+    "docs/product/MARKET_BENCHMARK.md",
+    "docs/product/STORY_MAP.md",
+    "docs/ux/UX_CONTRACT.md",
+    "docs/ux/DESIGN_SYSTEM.md",
+    "features.json",
+    "specs/bdd/TRACEABILITY.json",
+    "docs/engineering/ARCHITECTURE.md",
+    "docs/engineering/API.md",
+    "docs/engineering/DATA_MODEL.md"
+  ],
+  "snippets": [],
+  "notes": [],
+  "deliverables": [
+    "plan.md",
+    "plan.json"
+  ],
+  "feature_coverage": ["F001", "F002", "F003", "F004", "F005", "F006", "F007", "F008", "F009", "F010"]
+}

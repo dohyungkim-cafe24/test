@@ -1,0 +1,52 @@
+# API — TEMPLATE
+
+> Owner: architect
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/STORY_MAP.md (Launch scope)
+- features.json
+- specs/bdd/TRACEABILITY.json
+- specs/bdd/BDD_INDEX.json
+- docs/ux/UX_CONTRACT.md
+- docs/ux/DESIGN_SYSTEM.md
+
+---
+
+## Feature annotations (recommended)
+
+Tag feature-specific API changes with the feature id so downstream runs can stay feature-scoped.
+
+Example:
+
+- `### @F### POST /orders`
+- `- @F### Error: 409 when ...`
+
+The workspace's Feature Packet generator extracts `@F###`-tagged nearby lines.
+
+---
+
+## Endpoints
+
+PLACEHOLDER
+
+## Auth
+
+PLACEHOLDER
+
+## Errors
+
+PLACEHOLDER
+
+## Rate limits
+
+PLACEHOLDER
+
+## Examples
+
+PLACEHOLDER

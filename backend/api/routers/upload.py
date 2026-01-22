@@ -1,0 +1,300 @@
+"""Upload router for chunked video upload endpoints.
+
+@feature F002 - Video Upload
+
+Implements:
+- AC-006: Valid video file upload with progress indicator
+- AC-007: Upload complete navigates to subject selection
+- AC-008: File over 500MB shows size error message
+- AC-009: Video duration outside 1-3 min shows duration error
+- AC-010: Unsupported format shows format error message
+- AC-011: Network interruption resumes upload automatically
+- AC-012: Cancel upload discards partial upload
+"""
+from typing import Annotated, Optional
+from uuid import UUID
+
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Path, Query, Request, status
+
+from api.config import Settings, get_settings
+from api.routers.auth import get_current_user
+from api.schemas.upload import (
+    UploadCancelResponse,
+    UploadChunkError,
+    UploadChunkResponse,
+    UploadCompleteResponse,
+    UploadError,
+    UploadInitiateRequest,
+    UploadInitiateResponse,
+    UploadStatusResponse,
+)
+from api.services.database import get_db_session
+from api.services.upload_service import (
+    ChunkExistsError,
+    IncompleteUploadError,
+    SessionExpiredError,
+    SessionNotFoundError,
+    upload_service,
+)
+
+router = APIRouter(prefix="/upload", tags=["upload"])
+
+
+@router.post(
+    "/initiate",
+    response_model=UploadInitiateResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        401: {"description": "Not authenticated"},
+        422: {"description": "Validation error (size/duration/format)"},
+    },
+)
+async def initiate_upload(
+    request: UploadInitiateRequest,
+    current_user: Annotated[dict, Depends(get_current_user)],
+):
+    """Initiate a chunked upload session.
+
+    Validates file size, duration, and format before creating session.
+    Returns upload_id and chunk configuration for resumable upload.
+    """
+    user_id = UUID(current_user["id"])
+
+    async with get_db_session() as session:
+        result = await upload_service.initiate_upload(
+            session=session,
+            user_id=user_id,
+            filename=request.filename,
+            file_size=request.file_size,
+            content_type=request.content_type,
+            duration_seconds=request.duration_seconds,
+        )
+
+    return UploadInitiateResponse(**result)
+
+
+@router.put(
+    "/chunk/{upload_id}/{chunk_number}",
+    response_model=UploadChunkResponse,
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Upload session not found"},
+        409: {"model": UploadChunkError, "description": "Chunk already uploaded"},
+        410: {"description": "Upload session expired"},
+    },
+)
+async def upload_chunk(
+    upload_id: Annotated[UUID, Path(description="Upload session ID")],
+    chunk_number: Annotated[int, Path(description="0-indexed chunk number", ge=0)],
+    request: Request,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    content_md5: Annotated[Optional[str], Header(alias="Content-MD5")] = None,
+):
+    """Upload a single chunk.
+
+    Chunk data should be sent as raw binary in the request body.
+    Content-MD5 header is optional for integrity verification.
+    """
+    # Read raw body
+    chunk_data = await request.body()
+
+    if not chunk_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Empty chunk data",
+        )
+
+    user_id = UUID(current_user["id"])
+
+    try:
+        async with get_db_session() as session:
+            result = await upload_service.upload_chunk(
+                session=session,
+                upload_id=upload_id,
+                chunk_number=chunk_number,
+                chunk_data=chunk_data,
+                user_id=user_id,
+                content_md5=content_md5,
+            )
+        return UploadChunkResponse(**result)
+
+    except SessionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Upload session not found",
+        )
+    except SessionExpiredError:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Upload session has expired",
+        )
+    except ChunkExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=UploadChunkError(
+                error="chunk_exists",
+                error_description=f"Chunk {e.chunk_number} already uploaded",
+                chunk_number=e.chunk_number,
+            ).model_dump(),
+        )
+
+
+@router.post(
+    "/complete/{upload_id}",
+    response_model=UploadCompleteResponse,
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Upload session not found"},
+        409: {"description": "Upload incomplete (missing chunks)"},
+        410: {"description": "Upload session expired"},
+    },
+)
+async def complete_upload(
+    upload_id: Annotated[UUID, Path(description="Upload session ID")],
+    current_user: Annotated[dict, Depends(get_current_user)],
+):
+    """Complete the upload and trigger processing.
+
+    All chunks must be uploaded before calling this endpoint.
+    Returns video_id for subsequent operations (subject selection, etc.).
+    """
+    user_id = UUID(current_user["id"])
+
+    try:
+        async with get_db_session() as session:
+            result = await upload_service.complete_upload(
+                session=session,
+                upload_id=upload_id,
+                user_id=user_id,
+            )
+        return UploadCompleteResponse(**result)
+
+    except SessionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Upload session not found",
+        )
+    except SessionExpiredError:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Upload session has expired",
+        )
+    except IncompleteUploadError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e),
+        )
+
+
+@router.delete(
+    "/{upload_id}",
+    response_model=UploadCancelResponse,
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Upload session not found"},
+    },
+)
+async def cancel_upload(
+    upload_id: Annotated[UUID, Path(description="Upload session ID")],
+    current_user: Annotated[dict, Depends(get_current_user)],
+):
+    """Cancel an in-progress upload.
+
+    Discards all uploaded chunks and marks session as cancelled.
+    """
+    user_id = UUID(current_user["id"])
+
+    try:
+        async with get_db_session() as session:
+            result = await upload_service.cancel_upload(
+                session=session,
+                upload_id=upload_id,
+                user_id=user_id,
+            )
+        return UploadCancelResponse(**result)
+
+    except SessionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Upload session not found",
+        )
+
+
+@router.get(
+    "/status/{upload_id}",
+    response_model=UploadStatusResponse,
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Upload session not found"},
+        410: {"description": "Upload session expired"},
+    },
+)
+async def get_upload_status(
+    upload_id: Annotated[UUID, Path(description="Upload session ID")],
+    current_user: Annotated[dict, Depends(get_current_user)],
+):
+    """Get upload status for resumption.
+
+    Returns current progress and list of received chunks.
+    """
+    user_id = UUID(current_user["id"])
+
+    try:
+        async with get_db_session() as session:
+            result = await upload_service.get_upload_status(
+                session=session,
+                upload_id=upload_id,
+                user_id=user_id,
+            )
+        return UploadStatusResponse(**result)
+
+    except SessionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Upload session not found",
+        )
+    except SessionExpiredError:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Upload session has expired",
+        )
+
+
+@router.get(
+    "/chunks/{upload_id}",
+    response_model=list[int],
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Upload session not found"},
+        410: {"description": "Upload session expired"},
+    },
+)
+async def get_received_chunks(
+    upload_id: Annotated[UUID, Path(description="Upload session ID")],
+    current_user: Annotated[dict, Depends(get_current_user)],
+):
+    """Get list of received chunk numbers.
+
+    Used by client to determine which chunks to upload for resumption.
+    """
+    user_id = UUID(current_user["id"])
+
+    try:
+        async with get_db_session() as session:
+            result = await upload_service.get_received_chunks(
+                session=session,
+                upload_id=upload_id,
+                user_id=user_id,
+            )
+        return result
+
+    except SessionNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Upload session not found",
+        )
+    except SessionExpiredError:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Upload session has expired",
+        )

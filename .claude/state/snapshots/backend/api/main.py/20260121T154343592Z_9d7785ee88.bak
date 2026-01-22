@@ -1,0 +1,79 @@
+"""FastAPI application factory and configuration.
+
+PunchAnalytics Backend API
+"""
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from api.config import get_settings
+from api.routers import auth, subject, upload
+from api.services.database import init_db, close_db
+from api.services.state_store import close_redis
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Application lifespan handler for startup/shutdown.
+
+    Handles:
+    - Database connection pool initialization
+    - Redis connection
+    - Background task initialization
+    """
+    settings = get_settings()
+
+    # Startup: initialize database tables
+    await init_db()
+
+    yield
+
+    # Shutdown: close connections
+    await close_db()
+    await close_redis()
+
+
+def create_app() -> FastAPI:
+    """Create and configure FastAPI application.
+
+    Returns:
+        Configured FastAPI application instance.
+    """
+    settings = get_settings()
+
+    app = FastAPI(
+        title="PunchAnalytics API",
+        description="Boxing training analysis API with AI-powered feedback",
+        version="0.1.0",
+        docs_url="/api/docs" if not settings.is_production else None,
+        redoc_url="/api/redoc" if not settings.is_production else None,
+        lifespan=lifespan,
+    )
+
+    # CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Include routers
+    app.include_router(auth.router, prefix="/api/v1")
+    app.include_router(upload.router, prefix="/api/v1")
+    app.include_router(subject.router, prefix="/api/v1")
+
+    # Health check endpoint
+    @app.get("/health")
+    async def health_check():
+        """Health check endpoint for load balancer."""
+        return {"status": "healthy", "version": "0.1.0"}
+
+    return app
+
+
+# For running with uvicorn directly
+app = create_app()

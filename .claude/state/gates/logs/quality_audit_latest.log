@@ -1,0 +1,9 @@
+# gate: quality_audit
+# utc: 20260122T083214834512Z
+# stage: release
+# run: 20260122-032638-b99ba0
+# cmd: python3 .claude/scripts/quality_audit.py
+
+QUALITY_AUDIT_OK
+
+# exit_code: 0

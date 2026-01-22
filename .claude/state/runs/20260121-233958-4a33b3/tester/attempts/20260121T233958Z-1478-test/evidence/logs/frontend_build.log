@@ -1,0 +1,29 @@
+$ npm run build
+
+> punch-analytics-frontend@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.0
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/7) ...
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/login"
+
+Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (7/7)
+
+> Export encountered errors on following paths:
+    /(auth)/login/page: /login
+
+------------------------------------------------------------------
+ANALYSIS:
+- TypeScript compilation: PASSED (compiled successfully)
+- Static generation: FAILED on /login page (unrelated to F008)
+- F008 Report page: Not tested during static export
+
+The build error is in the login page, not the report display feature (F008).
+This is a pre-existing issue unrelated to F008 implementation.

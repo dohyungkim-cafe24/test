@@ -1,0 +1,120 @@
+"""Report database model for analysis results.
+
+@feature F007 - LLM Strategic Analysis
+@feature F008 - Report Display
+
+Maps to reports table as defined in DATA_MODEL.md.
+
+Acceptance Criteria:
+- AC-037: LLM generates 3-5 strengths, weaknesses, recommendations each
+- AC-040: Analysis includes AI disclaimer
+"""
+from datetime import datetime
+from typing import Any, Optional
+from uuid import UUID, uuid4
+
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, SmallInteger, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
+from sqlalchemy.types import JSON
+
+from api.models.user import Base
+
+
+# Default AI disclaimer as required by product requirements
+DEFAULT_DISCLAIMER = (
+    "This AI analysis is for training purposes only and is not a substitute "
+    "for professional coaching. Always train under proper supervision."
+)
+
+
+class Report(Base):
+    """Report model storing generated analysis reports.
+
+    AC-037: LLM generates 3-5 strengths, weaknesses, recommendations each
+    AC-040: Analysis includes AI disclaimer
+
+    Stores the output of LLM strategic analysis including performance
+    metrics, coaching feedback, and recommendations.
+    """
+
+    __tablename__ = "reports"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    analysis_id: Mapped[UUID] = mapped_column(
+        ForeignKey("analyses.id", ondelete="CASCADE"), unique=True, nullable=False
+    )
+    video_id: Mapped[UUID] = mapped_column(
+        ForeignKey("videos.id"), nullable=False
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+
+    # Summary
+    performance_score: Mapped[Optional[int]] = mapped_column(
+        SmallInteger, nullable=True
+    )
+    overall_assessment: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # Analysis sections (JSONB arrays)
+    # strengths: Array of {title, description, metric_reference}
+    # weaknesses: Array of {title, description, metric_reference}
+    # recommendations: Array of {title, description, priority, drill_type}
+    strengths: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    weaknesses: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    recommendations: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+
+    # Calculated metrics
+    # {metric_name: {value, unit, benchmark_min, benchmark_max, percentile}}
+    metrics: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # LLM metadata
+    llm_model: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    prompt_tokens: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    completion_tokens: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    # AI disclaimer (required by product requirements) - AC-040
+    disclaimer: Mapped[str] = mapped_column(
+        Text, nullable=False, default=DEFAULT_DISCLAIMER
+    )
+
+    __table_args__ = (
+        Index("idx_reports_user", "user_id", "created_at"),
+        Index("idx_reports_video", "video_id"),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert model to dictionary for API response."""
+        return {
+            "id": str(self.id),
+            "analysis_id": str(self.analysis_id),
+            "video_id": str(self.video_id),
+            "user_id": str(self.user_id),
+            "performance_score": self.performance_score,
+            "overall_assessment": self.overall_assessment,
+            "strengths": self.strengths,
+            "weaknesses": self.weaknesses,
+            "recommendations": self.recommendations,
+            "metrics": self.metrics,
+            "llm_model": self.llm_model,
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+            "disclaimer": self.disclaimer,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }

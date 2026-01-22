@@ -1,0 +1,42 @@
+# Copy — TEMPLATE
+
+> Owner: ux-designer
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+>
+> Tip: annotate feature-scoped copy blocks with `@F###` so build/test agents can reliably find the right strings.
+
+## Inputs
+
+- docs/ux/UX_SPEC.md
+- docs/ux/UI_STATES.md
+
+---
+
+## Tone & voice
+
+PLACEHOLDER
+
+## UI copy
+
+For each key screen/flow:
+- labels / button text
+- helper text
+- empty-state copy
+
+PLACEHOLDER
+
+## Error messages
+
+Define user-facing errors:
+- validation messages
+- network/service errors
+- retry guidance
+
+PLACEHOLDER
+
+## Glossary
+
+PLACEHOLDER

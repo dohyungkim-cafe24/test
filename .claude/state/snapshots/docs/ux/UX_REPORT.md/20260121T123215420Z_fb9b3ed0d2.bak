@@ -1,0 +1,33 @@
+# UX Report — TEMPLATE
+
+> Owner: ux-designer
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/MARKET_BENCHMARK.md
+- docs/product/STORY_MAP.md (Launch scope)
+- docs/ux/UX_CONTRACT.md
+- docs/ux/DESIGN_SYSTEM.md
+- docs/ux/UX_SPEC.md
+- docs/ux/UI_STATES.md
+- docs/ux/IA_MAP.md
+- docs/ux/COPY.md
+
+---
+
+## Summary
+
+PLACEHOLDER
+
+## Decisions
+
+PLACEHOLDER
+
+## Open questions
+
+PLACEHOLDER

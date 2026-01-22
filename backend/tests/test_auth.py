@@ -1,0 +1,354 @@
+"""
+Tests for F001: User Authentication
+
+Tests cover:
+- AC-001: Kakao OAuth login redirects and creates session on success
+- AC-002: Google OAuth login redirects and creates session on success
+- AC-003: Expired OAuth token prompts re-authentication without data loss
+- AC-004: Logout terminates session and redirects to landing page
+- AC-005: Unauthenticated access to protected routes redirects to login
+
+Security fixes verified:
+- B1: CSRF state validated against server-side storage
+- B2/M2: Refresh tokens stored and validated in database
+- M1: Access token delivered via fragment identifier (not query param)
+- M3: User persisted to database on OAuth callback
+- m1: redirect_uri validated against allowlist
+"""
+import pytest
+from unittest.mock import AsyncMock, patch, MagicMock
+from fastapi import status
+from fastapi.testclient import TestClient
+
+
+class TestKakaoOAuth:
+    """Tests for Kakao OAuth flow (AC-001)."""
+
+    def test_kakao_auth_redirects_to_provider(self, client: TestClient):
+        """GET /auth/kakao should redirect to Kakao authorization URL."""
+        response = client.get("/api/v1/auth/kakao")
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+        assert "kauth.kakao.com" in location
+        assert "client_id=" in location
+        assert "response_type=code" in location
+        assert "state=" in location  # CSRF protection
+
+    def test_kakao_auth_validates_redirect_uri(self, client: TestClient):
+        """GET /auth/kakao should validate redirect_uri against allowlist (m1)."""
+        # Valid redirect path
+        response = client.get("/api/v1/auth/kakao", params={"redirect_uri": "/dashboard"})
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+
+        # Invalid redirect path (open redirect attempt)
+        response = client.get("/api/v1/auth/kakao", params={"redirect_uri": "https://evil.com"})
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        # Should not contain evil.com in state
+        location = response.headers.get("location", "")
+        assert "evil.com" not in location
+
+    def test_kakao_callback_with_valid_code_creates_session(
+        self,
+        client: TestClient,
+        mock_kakao_oauth_response: dict,
+        mock_kakao_user_response: dict,
+    ):
+        """GET /auth/kakao/callback with valid code should create session."""
+        with patch("api.services.oauth_service.OAuthService.exchange_kakao_code") as mock_exchange:
+            mock_exchange.return_value = mock_kakao_oauth_response
+            with patch("api.services.oauth_service.OAuthService.get_kakao_user") as mock_user:
+                mock_user.return_value = mock_kakao_user_response
+
+                response = client.get(
+                    "/api/v1/auth/kakao/callback",
+                    params={"code": "valid-auth-code", "state": "valid-state"},
+                )
+
+        # Should redirect to frontend
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+        assert "localhost:3000" in location
+
+        # M1 fix: Token should be in fragment (#), not query param (?)
+        assert "#access_token=" in location
+        assert "?access_token=" not in location
+
+        # Should set HttpOnly cookie for refresh token
+        cookies = response.headers.get_list("set-cookie")
+        assert any("refresh_token" in c for c in cookies)
+
+    def test_kakao_callback_validates_csrf_state(self, client: TestClient):
+        """GET /auth/kakao/callback should validate CSRF state (B1)."""
+        # Invalid state should be rejected
+        response = client.get(
+            "/api/v1/auth/kakao/callback",
+            params={"code": "valid-code", "state": "invalid-state-not-in-store"},
+        )
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+        assert "error=" in location
+        assert "invalid_state" in location
+
+    def test_kakao_callback_with_invalid_code_returns_error(self, client: TestClient):
+        """GET /auth/kakao/callback with invalid code should return error."""
+        with patch("api.services.oauth_service.OAuthService.exchange_kakao_code") as mock_exchange:
+            mock_exchange.side_effect = ValueError("Invalid authorization code")
+
+            response = client.get(
+                "/api/v1/auth/kakao/callback",
+                params={"code": "invalid-code", "state": "valid-state"},
+            )
+
+        # Should redirect to login with error
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+        assert "error=" in location
+
+    def test_kakao_callback_preserves_redirect_uri(self, client: TestClient):
+        """Callback should preserve the original redirect destination."""
+        with patch("api.services.oauth_service.OAuthService.exchange_kakao_code") as mock_exchange:
+            mock_exchange.return_value = {"access_token": "token"}
+            with patch("api.services.oauth_service.OAuthService.get_kakao_user") as mock_user:
+                mock_user.return_value = {"id": 123, "kakao_account": {"email": "test@kakao.com", "profile": {}}}
+
+                response = client.get(
+                    "/api/v1/auth/kakao/callback",
+                    params={
+                        "code": "valid-code",
+                        "state": "valid-state|/dashboard",  # includes redirect
+                    },
+                )
+
+        location = response.headers.get("location", "")
+        # Should redirect to the preserved destination
+        assert "/dashboard" in location
+
+
+class TestGoogleOAuth:
+    """Tests for Google OAuth flow (AC-002)."""
+
+    def test_google_auth_redirects_to_provider(self, client: TestClient):
+        """GET /auth/google should redirect to Google authorization URL."""
+        response = client.get("/api/v1/auth/google")
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+        assert "accounts.google.com" in location
+        assert "client_id=" in location
+        assert "response_type=code" in location
+        assert "state=" in location
+
+    def test_google_callback_with_valid_code_creates_session(
+        self,
+        client: TestClient,
+        mock_google_oauth_response: dict,
+        mock_google_user_response: dict,
+    ):
+        """GET /auth/google/callback with valid code should create session."""
+        with patch("api.services.oauth_service.OAuthService.exchange_google_code") as mock_exchange:
+            mock_exchange.return_value = mock_google_oauth_response
+            with patch("api.services.oauth_service.OAuthService.get_google_user") as mock_user:
+                mock_user.return_value = mock_google_user_response
+
+                response = client.get(
+                    "/api/v1/auth/google/callback",
+                    params={"code": "valid-auth-code", "state": "valid-state"},
+                )
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+
+        # M1 fix: Token in fragment
+        assert "#access_token=" in location
+
+        cookies = response.headers.get_list("set-cookie")
+        assert any("refresh_token" in c for c in cookies)
+
+
+class TestSessionManagement:
+    """Tests for session management (AC-003, AC-004)."""
+
+    def test_refresh_token_returns_new_access_token(self, client: TestClient, app):
+        """POST /auth/refresh should return new access token."""
+        from tests.conftest import MockUser, MockRefreshToken, _test_user_store, _test_token_store
+        import hashlib
+
+        # Setup: create a user and token in the test stores
+        user = MockUser(email="test@example.com")
+        _test_user_store[str(user.id)] = user
+
+        raw_token = "valid-refresh-token"
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        _test_token_store[token_hash] = (MockRefreshToken(user.id, token_hash), user)
+
+        # Set the refresh token cookie
+        client.cookies.set("refresh_token", raw_token)
+
+        response = client.post("/api/v1/auth/refresh")
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert "access_token" in data
+        assert data["token_type"] == "Bearer"
+        assert "expires_in" in data
+
+    def test_refresh_with_invalid_token_returns_401(self, client: TestClient):
+        """POST /auth/refresh with invalid token should return 401."""
+        client.cookies.set("refresh_token", "invalid-refresh-token")
+
+        response = client.post("/api/v1/auth/refresh")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        data = response.json()
+        assert data["detail"]["error"] == "invalid_refresh_token"
+
+    def test_refresh_without_token_returns_401(self, client: TestClient):
+        """POST /auth/refresh without token should return 401."""
+        response = client.post("/api/v1/auth/refresh")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        data = response.json()
+        assert data["detail"]["error"] == "invalid_refresh_token"
+        assert "Missing refresh token" in data["detail"]["error_description"]
+
+    def test_logout_clears_session(self, client: TestClient):
+        """POST /auth/logout should clear session and cookies."""
+        client.cookies.set("refresh_token", "valid-refresh-token")
+
+        response = client.post("/api/v1/auth/logout")
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["message"] == "Logged out successfully"
+
+        # Refresh token cookie should be cleared
+        cookies = response.headers.get_list("set-cookie")
+        assert any("refresh_token" in c and ("Max-Age=0" in c or 'expires=' in c.lower()) for c in cookies)
+
+
+class TestAuthGuard:
+    """Tests for protected route access (AC-005)."""
+
+    def test_protected_route_without_token_returns_401(self, client: TestClient):
+        """GET /auth/me without token should return 401."""
+        response = client.get("/api/v1/auth/me")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_protected_route_with_valid_token_returns_user(self, client: TestClient, app):
+        """GET /auth/me with valid token should return user data."""
+        from api.routers.auth import get_current_user
+
+        # Override dependency with our mock user
+        async def mock_get_current_user():
+            return {
+                "id": "usr_abc123",
+                "email": "boxer@example.com",
+                "name": "Test Boxer",
+                "provider": "kakao",
+                "avatar_url": "https://example.com/avatar.jpg",
+            }
+
+        app.dependency_overrides[get_current_user] = mock_get_current_user
+
+        try:
+            response = client.get(
+                "/api/v1/auth/me",
+                headers={"Authorization": "Bearer valid-access-token"},
+            )
+
+            assert response.status_code == status.HTTP_200_OK
+            data = response.json()
+            assert data["email"] == "boxer@example.com"
+            assert data["provider"] == "kakao"
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_protected_route_with_expired_token_returns_401(self, client: TestClient):
+        """GET /auth/me with expired token should return 401."""
+        response = client.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": "Bearer expired-token"},
+        )
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+class TestOAuthErrorHandling:
+    """Tests for OAuth error scenarios."""
+
+    def test_kakao_callback_cancelled_by_user(self, client: TestClient):
+        """Callback with error=access_denied should redirect with cancellation message."""
+        response = client.get(
+            "/api/v1/auth/kakao/callback",
+            params={"error": "access_denied", "error_description": "User cancelled"},
+        )
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+        assert "error=cancelled" in location or "error=access_denied" in location
+
+    def test_google_callback_missing_state_returns_error(self, client: TestClient):
+        """Callback without state param should return CSRF error."""
+        response = client.get(
+            "/api/v1/auth/google/callback",
+            params={"code": "some-code"},
+        )
+
+        # Should redirect with error
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+        assert "error=" in location
+        assert "invalid_state" in location
+
+
+class TestSecurityFixes:
+    """Tests specifically verifying security fixes from code review."""
+
+    def test_b1_csrf_state_validated_server_side(self, client: TestClient):
+        """B1: State token must be validated against server-side storage."""
+        # State that was never stored should be rejected
+        response = client.get(
+            "/api/v1/auth/kakao/callback",
+            params={"code": "valid-code", "state": "forged-state-token"},
+        )
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        location = response.headers.get("location", "")
+        assert "invalid_state" in location
+
+    def test_m1_access_token_not_in_query_param(
+        self,
+        client: TestClient,
+        mock_kakao_oauth_response: dict,
+        mock_kakao_user_response: dict,
+    ):
+        """M1: Access token must not be exposed in URL query parameter."""
+        with patch("api.services.oauth_service.OAuthService.exchange_kakao_code") as mock_exchange:
+            mock_exchange.return_value = mock_kakao_oauth_response
+            with patch("api.services.oauth_service.OAuthService.get_kakao_user") as mock_user:
+                mock_user.return_value = mock_kakao_user_response
+
+                response = client.get(
+                    "/api/v1/auth/kakao/callback",
+                    params={"code": "valid-auth-code", "state": "valid-state"},
+                )
+
+        location = response.headers.get("location", "")
+        # Token should be in fragment (#), not query (?)
+        assert "?access_token=" not in location
+        assert "#access_token=" in location
+
+    def test_m1_redirect_uri_validated(self, client: TestClient):
+        """m1: Open redirect should be prevented."""
+        # Absolute URL should be rejected
+        response = client.get("/api/v1/auth/kakao", params={"redirect_uri": "https://evil.com/steal"})
+        location = response.headers.get("location", "")
+        assert "evil.com" not in location
+
+        # Unknown relative path should be rejected
+        response = client.get("/api/v1/auth/kakao", params={"redirect_uri": "/evil/path"})
+        location = response.headers.get("location", "")
+        assert "/evil/path" not in location

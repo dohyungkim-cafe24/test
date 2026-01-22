@@ -1,0 +1,89 @@
+"""Database connection and session management."""
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from api.config import get_settings
+
+# Global engine and session factory (initialized in lifespan)
+_engine = None
+_async_session_factory = None
+
+
+def get_engine():
+    """Get or create the database engine."""
+    global _engine
+    if _engine is None:
+        settings = get_settings()
+
+        # Base engine options
+        engine_options = {
+            "echo": settings.environment == "development",
+        }
+
+        # PostgreSQL-specific pool options (not compatible with SQLite)
+        if settings.database_url.startswith("postgresql"):
+            engine_options.update({
+                "pool_pre_ping": True,
+                "pool_size": 5,
+                "max_overflow": 10,
+            })
+
+        _engine = create_async_engine(settings.database_url, **engine_options)
+    return _engine
+
+
+def get_session_factory():
+    """Get or create the session factory."""
+    global _async_session_factory
+    if _async_session_factory is None:
+        _async_session_factory = async_sessionmaker(
+            get_engine(),
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+    return _async_session_factory
+
+
+@asynccontextmanager
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+    """Get a database session.
+
+    Usage:
+        async with get_db_session() as session:
+            result = await session.execute(query)
+    """
+    factory = get_session_factory()
+    async with factory() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+
+
+async def init_db():
+    """Initialize database (create tables if needed)."""
+    from api.models.user import Base
+    # Import models to register them with Base.metadata
+    from api.models import upload  # noqa: F401
+    from api.models import subject  # noqa: F401
+    from api.models import body_specs  # noqa: F401
+    from api.models import analysis  # noqa: F401
+    from api.models import stamp  # noqa: F401
+    from api.models import report  # noqa: F401
+
+    engine = get_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def close_db():
+    """Close database connections."""
+    global _engine, _async_session_factory
+    if _engine:
+        await _engine.dispose()
+        _engine = None
+        _async_session_factory = None

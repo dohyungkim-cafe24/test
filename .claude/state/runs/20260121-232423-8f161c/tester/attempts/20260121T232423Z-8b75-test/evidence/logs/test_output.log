@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 14 items
+
+tests/test_llm_analysis.py::TestReportModel::test_report_model_creation PASSED [  7%]
+tests/test_llm_analysis.py::TestReportModel::test_report_disclaimer_default PASSED [ 14%]
+tests/test_llm_analysis.py::TestReportSchemas::test_strength_item_schema PASSED [ 21%]
+tests/test_llm_analysis.py::TestReportSchemas::test_weakness_item_schema PASSED [ 28%]
+tests/test_llm_analysis.py::TestReportSchemas::test_recommendation_item_schema PASSED [ 35%]
+tests/test_llm_analysis.py::TestReportSchemas::test_metrics_data_schema PASSED [ 42%]
+tests/test_llm_analysis.py::TestReportSchemas::test_report_response_schema PASSED [ 50%]
+tests/test_llm_analysis.py::TestLLMAnalysisService::test_format_prompt_includes_pose_data PASSED [ 57%]
+tests/test_llm_analysis.py::TestLLMAnalysisService::test_calculate_derived_metrics PASSED [ 64%]
+tests/test_llm_analysis.py::TestLLMAnalysisService::test_analysis_adapts_to_beginner_level PASSED [ 71%]
+tests/test_llm_analysis.py::TestLLMAnalysisService::test_analysis_adapts_to_competitive_level PASSED [ 78%]
+tests/test_llm_analysis.py::TestLLMAnalysisService::test_retry_on_llm_failure PASSED [ 85%]
+tests/test_llm_analysis.py::TestLLMAnalysisService::test_llm_generates_3_to_5_items PASSED [ 92%]
+tests/test_llm_analysis.py::TestLLMAnalysisIntegration::test_generate_analysis_full_flow PASSED [100%]
+
+============================== 14 passed in 3.28s ==============================

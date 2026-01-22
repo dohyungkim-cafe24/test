@@ -1,0 +1,694 @@
+{
+  "schema_version": 1,
+  "project": "punch-analytics",
+  "generated_at": "2026-01-21T13:22:14Z",
+  "sections": {
+    "inputs": true,
+    "scope": true,
+    "milestones": true,
+    "critical_path": true,
+    "definition_of_done": true,
+    "risks": true,
+    "test_strategy": true
+  },
+  "inputs": [
+    "docs/product/REQUIREMENTS_BASELINE.md",
+    "docs/product/MARKET_BENCHMARK.md",
+    "docs/product/STORY_MAP.md",
+    "docs/ux/UX_CONTRACT.md",
+    "docs/ux/DESIGN_SYSTEM.md",
+    "features.json",
+    "specs/bdd/TRACEABILITY.json",
+    "specs/bdd/BDD_INDEX.json",
+    "docs/engineering/ARCHITECTURE.md",
+    "docs/engineering/API.md",
+    "docs/engineering/DATA_MODEL.md"
+  ],
+  "features": [
+    {
+      "id": "F001",
+      "name": "User Authentication",
+      "description": "OAuth-based authentication via Kakao and Google providers with session management",
+      "user_story": "US-001",
+      "dependencies": [],
+      "milestone": "M1",
+      "priority": 1,
+      "estimated_complexity": "medium",
+      "files_to_create": [
+        "src/app/(auth)/login/page.tsx",
+        "src/app/(auth)/callback/kakao/route.ts",
+        "src/app/(auth)/callback/google/route.ts",
+        "src/lib/auth/oauth.ts",
+        "src/lib/auth/jwt.ts",
+        "src/lib/auth/middleware.ts",
+        "src/components/auth/LoginButton.tsx",
+        "api/routers/auth.py",
+        "api/services/oauth_service.py",
+        "api/models/user.py",
+        "api/schemas/auth.py"
+      ],
+      "files_to_modify": [],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": true,
+        "screenshots": true
+      },
+      "bdd_scenarios": [
+        "specs/bdd/auth.feature#Successful Kakao OAuth login",
+        "specs/bdd/auth.feature#Successful Google OAuth login",
+        "specs/bdd/auth.feature#User logs out successfully",
+        "specs/bdd/auth.feature#Unauthenticated user redirected to login",
+        "specs/bdd/auth.feature#Session expiration prompts re-authentication",
+        "specs/bdd/auth.feature#OAuth login cancelled by user",
+        "specs/bdd/auth.feature#OAuth provider unavailable"
+      ],
+      "acceptance_criteria": [
+        "AC-001: Kakao OAuth login redirects and creates session on success",
+        "AC-002: Google OAuth login redirects and creates session on success",
+        "AC-003: Expired OAuth token prompts re-authentication without data loss",
+        "AC-004: Logout terminates session and redirects to landing page",
+        "AC-005: Unauthenticated access to protected routes redirects to login"
+      ],
+      "api_endpoints": [
+        "GET /auth/kakao",
+        "GET /auth/kakao/callback",
+        "GET /auth/google",
+        "GET /auth/google/callback",
+        "POST /auth/refresh",
+        "POST /auth/logout",
+        "GET /auth/me"
+      ],
+      "data_model_entities": ["users", "refresh_tokens"]
+    },
+    {
+      "id": "F002",
+      "name": "Video Upload",
+      "description": "Video file upload with validation, progress tracking, and resumable uploads",
+      "user_story": "US-002",
+      "dependencies": ["F001"],
+      "milestone": "M2",
+      "priority": 2,
+      "estimated_complexity": "high",
+      "files_to_create": [
+        "src/app/upload/page.tsx",
+        "src/components/upload/UploadDropzone.tsx",
+        "src/components/upload/UploadProgress.tsx",
+        "src/components/upload/ValidationError.tsx",
+        "src/lib/upload/chunked-upload.ts",
+        "src/lib/upload/validation.ts",
+        "api/routers/upload.py",
+        "api/services/upload_service.py",
+        "api/models/video.py",
+        "api/models/upload_session.py",
+        "api/schemas/upload.py"
+      ],
+      "files_to_modify": [],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": true,
+        "screenshots": true
+      },
+      "bdd_scenarios": [
+        "specs/bdd/upload.feature#Successful video upload with valid file",
+        "specs/bdd/upload.feature#Upload shows progress indicator",
+        "specs/bdd/upload.feature#File exceeds maximum size limit",
+        "specs/bdd/upload.feature#Video duration too short",
+        "specs/bdd/upload.feature#Video duration too long",
+        "specs/bdd/upload.feature#Unsupported file format rejected",
+        "specs/bdd/upload.feature#Upload resumes after network interruption",
+        "specs/bdd/upload.feature#User cancels upload in progress",
+        "specs/bdd/upload.feature#Upload area shows empty state initially"
+      ],
+      "acceptance_criteria": [
+        "AC-006: Valid video file (MP4/MOV/WebM, <500MB, 1-3 min) uploads with progress indicator",
+        "AC-007: Upload complete navigates to subject selection",
+        "AC-008: File over 500MB shows size error message",
+        "AC-009: Video duration outside 1-3 min shows duration error",
+        "AC-010: Unsupported format shows format error message",
+        "AC-011: Network interruption resumes upload automatically",
+        "AC-012: Cancel upload discards partial upload"
+      ],
+      "api_endpoints": [
+        "POST /upload/initiate",
+        "PUT /upload/chunk/{upload_id}/{chunk_number}",
+        "POST /upload/complete/{upload_id}",
+        "DELETE /upload/{upload_id}"
+      ],
+      "data_model_entities": ["videos", "upload_sessions", "upload_chunks"]
+    },
+    {
+      "id": "F003",
+      "name": "Subject Selection",
+      "description": "Select analysis subject from video thumbnails with visual confirmation",
+      "user_story": "US-003",
+      "dependencies": ["F002"],
+      "milestone": "M2",
+      "priority": 3,
+      "estimated_complexity": "medium",
+      "files_to_create": [
+        "src/app/configure/subject/page.tsx",
+        "src/components/subject/ThumbnailGrid.tsx",
+        "src/components/subject/PersonSelector.tsx",
+        "src/components/subject/SelectionConfirm.tsx",
+        "src/lib/subject/bounding-box.ts",
+        "api/routers/analysis.py",
+        "api/services/thumbnail_service.py",
+        "api/models/thumbnail.py",
+        "api/models/subject.py",
+        "api/schemas/analysis.py",
+        "workers/tasks/extract_thumbnails.py"
+      ],
+      "files_to_modify": [],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": true,
+        "screenshots": true
+      },
+      "bdd_scenarios": [
+        "specs/bdd/subject-selection.feature#Thumbnail grid displays extracted frames",
+        "specs/bdd/subject-selection.feature#User selects subject from thumbnail",
+        "specs/bdd/subject-selection.feature#User changes selection before confirmation",
+        "specs/bdd/subject-selection.feature#User confirms subject selection",
+        "specs/bdd/subject-selection.feature#Single person auto-selected",
+        "specs/bdd/subject-selection.feature#No subjects detected in video",
+        "specs/bdd/subject-selection.feature#Thumbnail extraction loading state"
+      ],
+      "acceptance_criteria": [
+        "AC-013: Thumbnail grid displays after upload completes",
+        "AC-014: Tap on person highlights with selection indicator",
+        "AC-015: Confirm selection stores bounding box for tracking",
+        "AC-016: Selection can be changed before confirmation",
+        "AC-017: Single person auto-selected with confirm option"
+      ],
+      "api_endpoints": [
+        "GET /analysis/thumbnails/{video_id}",
+        "POST /analysis/subject/{video_id}"
+      ],
+      "data_model_entities": ["thumbnails", "subjects"]
+    },
+    {
+      "id": "F004",
+      "name": "Body Specification Input",
+      "description": "User physical attributes form with validation and persistence",
+      "user_story": "US-004",
+      "dependencies": ["F003"],
+      "milestone": "M2",
+      "priority": 4,
+      "estimated_complexity": "low",
+      "files_to_create": [
+        "src/app/configure/specs/page.tsx",
+        "src/components/specs/BodySpecsForm.tsx",
+        "src/components/specs/HeightInput.tsx",
+        "src/components/specs/WeightInput.tsx",
+        "src/components/specs/ExperienceSelect.tsx",
+        "src/components/specs/StanceSelect.tsx",
+        "src/lib/specs/validation.ts",
+        "api/services/body_specs_service.py",
+        "api/models/body_specs.py",
+        "api/schemas/body_specs.py"
+      ],
+      "files_to_modify": [
+        "api/routers/analysis.py"
+      ],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": true,
+        "screenshots": true
+      },
+      "bdd_scenarios": [
+        "specs/bdd/body-specs.feature#User enters valid body specifications",
+        "specs/bdd/body-specs.feature#Height below minimum shows validation error",
+        "specs/bdd/body-specs.feature#Height above maximum shows validation error",
+        "specs/bdd/body-specs.feature#Weight below minimum shows validation error",
+        "specs/bdd/body-specs.feature#Weight above maximum shows validation error",
+        "specs/bdd/body-specs.feature#All fields required for submission",
+        "specs/bdd/body-specs.feature#Body specs pre-filled for returning user",
+        "specs/bdd/body-specs.feature#Invalid number format shows error"
+      ],
+      "acceptance_criteria": [
+        "AC-018: Height input accepts 100-250cm range",
+        "AC-019: Weight input accepts 30-200kg range",
+        "AC-020: Experience level dropdown with four options",
+        "AC-021: Stance selection between Orthodox and Southpaw",
+        "AC-022: Start Analysis enabled when all fields complete",
+        "AC-023: Invalid values show inline validation errors",
+        "AC-024: Body specs persisted and pre-filled on return"
+      ],
+      "api_endpoints": [
+        "POST /analysis/body-specs/{video_id}"
+      ],
+      "data_model_entities": ["body_specs", "users"]
+    },
+    {
+      "id": "F005",
+      "name": "Pose Estimation Processing",
+      "description": "MediaPipe-based skeletal coordinate extraction with status tracking",
+      "user_story": "US-005",
+      "dependencies": ["F003"],
+      "milestone": "M3",
+      "priority": 5,
+      "estimated_complexity": "high",
+      "files_to_create": [
+        "src/app/processing/page.tsx",
+        "src/components/processing/ProcessingStatus.tsx",
+        "src/components/processing/StageProgress.tsx",
+        "src/lib/processing/websocket.ts",
+        "api/routers/processing.py",
+        "api/services/processing_service.py",
+        "api/models/analysis.py",
+        "api/schemas/processing.py",
+        "api/websockets/status.py",
+        "workers/tasks/pose_estimation.py",
+        "workers/lib/mediapipe_processor.py",
+        "workers/lib/subject_tracker.py"
+      ],
+      "files_to_modify": [],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": true,
+        "screenshots": true
+      },
+      "bdd_scenarios": [
+        "specs/bdd/processing.feature#Pose estimation extracts joint coordinates",
+        "specs/bdd/processing.feature#Subject tracking maintains across frames",
+        "specs/bdd/processing.feature#Processing status shows step progress",
+        "specs/bdd/processing.feature#Pose estimation fails with poor video quality",
+        "specs/bdd/processing.feature#Processing takes longer than expected"
+      ],
+      "acceptance_criteria": [
+        "AC-025: Video processed with 33-joint XYZ coordinate extraction",
+        "AC-026: Selected subject tracked across frames via bounding box",
+        "AC-027: Successful pose data stored in structured JSON",
+        "AC-028: Over 20% frame failure marks analysis as failed with guidance",
+        "AC-029: Processing progress logged and retrievable via status endpoint"
+      ],
+      "api_endpoints": [
+        "POST /analysis/start/{video_id}",
+        "GET /processing/status/{analysis_id}",
+        "WS /ws/status/{analysis_id}"
+      ],
+      "data_model_entities": ["analyses"]
+    },
+    {
+      "id": "F006",
+      "name": "Stamp Generation",
+      "description": "Automatic detection and timestamping of strikes and defensive actions",
+      "user_story": "US-006",
+      "dependencies": ["F005"],
+      "milestone": "M3",
+      "priority": 6,
+      "estimated_complexity": "high",
+      "files_to_create": [
+        "workers/tasks/stamp_detection.py",
+        "workers/lib/velocity_detector.py",
+        "workers/lib/action_classifier.py",
+        "workers/lib/trajectory_analyzer.py",
+        "api/models/stamp.py",
+        "api/schemas/stamp.py"
+      ],
+      "files_to_modify": [
+        "workers/tasks/pose_estimation.py"
+      ],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": false,
+        "screenshots": false
+      },
+      "bdd_scenarios": [
+        "specs/bdd/processing.feature#Strike detection identifies punch types",
+        "specs/bdd/processing.feature#Defensive action detection identifies guards",
+        "specs/bdd/processing.feature#Stamps include confidence scores",
+        "specs/bdd/processing.feature#No significant actions detected"
+      ],
+      "acceptance_criteria": [
+        "AC-030: Strikes detected by arm velocity and trajectory patterns",
+        "AC-031: Defensive actions detected by torso and arm positioning",
+        "AC-032: Each action timestamped with frame number and confidence",
+        "AC-033: Stamps stored with type, timestamp, side, and confidence",
+        "AC-034: No actions detected proceeds with generic feedback"
+      ],
+      "api_endpoints": [],
+      "data_model_entities": ["stamps"]
+    },
+    {
+      "id": "F007",
+      "name": "LLM Strategic Analysis",
+      "description": "AI-generated coaching feedback based on pose data and stamps",
+      "user_story": "US-007",
+      "dependencies": ["F006"],
+      "milestone": "M3",
+      "priority": 7,
+      "estimated_complexity": "high",
+      "files_to_create": [
+        "workers/tasks/llm_analysis.py",
+        "workers/lib/prompt_builder.py",
+        "workers/lib/metrics_calculator.py",
+        "workers/lib/response_parser.py",
+        "workers/lib/llm_client.py"
+      ],
+      "files_to_modify": [],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": false,
+        "screenshots": false
+      },
+      "bdd_scenarios": [
+        "specs/bdd/processing.feature#LLM generates strategic analysis",
+        "specs/bdd/processing.feature#Analysis adapts to beginner experience level",
+        "specs/bdd/processing.feature#Analysis adapts to competitive experience level",
+        "specs/bdd/processing.feature#LLM API failure triggers retry",
+        "specs/bdd/processing.feature#LLM API exhausts retries"
+      ],
+      "acceptance_criteria": [
+        "AC-035: Pose data and stamps formatted as JSON for LLM",
+        "AC-036: Derived metrics calculated (reach ratio, tilt, guard speed, frequency)",
+        "AC-037: LLM generates 3-5 strengths, weaknesses, recommendations each",
+        "AC-038: Analysis adapts to user experience level",
+        "AC-039: LLM failure retries 3 times with exponential backoff",
+        "AC-040: Analysis includes AI disclaimer"
+      ],
+      "api_endpoints": [],
+      "data_model_entities": ["reports"]
+    },
+    {
+      "id": "F008",
+      "name": "Report Display",
+      "description": "Analysis report with metrics visualization and recommendations",
+      "user_story": "US-008",
+      "dependencies": ["F007"],
+      "milestone": "M4",
+      "priority": 8,
+      "estimated_complexity": "medium",
+      "files_to_create": [
+        "src/app/report/[id]/page.tsx",
+        "src/components/report/ReportSummary.tsx",
+        "src/components/report/StrengthsSection.tsx",
+        "src/components/report/WeaknessesSection.tsx",
+        "src/components/report/RecommendationsSection.tsx",
+        "src/components/report/KeyMomentsSection.tsx",
+        "src/components/report/MetricsChart.tsx",
+        "src/components/report/PerformanceGauge.tsx",
+        "src/components/report/AIDisclaimer.tsx",
+        "src/lib/report/chart-config.ts",
+        "api/routers/reports.py",
+        "api/services/report_service.py",
+        "api/schemas/report.py"
+      ],
+      "files_to_modify": [],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": true,
+        "screenshots": true
+      },
+      "bdd_scenarios": [
+        "specs/bdd/report.feature#Report displays summary section",
+        "specs/bdd/report.feature#Report displays strengths section",
+        "specs/bdd/report.feature#Report displays weaknesses section",
+        "specs/bdd/report.feature#Report displays recommendations section",
+        "specs/bdd/report.feature#Report displays key moments with timestamps",
+        "specs/bdd/report.feature#Report displays metrics with visualizations",
+        "specs/bdd/report.feature#Report includes AI disclaimer",
+        "specs/bdd/report.feature#Report loads within performance target",
+        "specs/bdd/report.feature#Report displays correctly on mobile viewport",
+        "specs/bdd/report.feature#Report displays correctly on desktop viewport"
+      ],
+      "acceptance_criteria": [
+        "AC-041: Summary section displays overall assessment",
+        "AC-042: Strengths section shows 3-5 observations",
+        "AC-043: Weaknesses section shows 3-5 improvement areas",
+        "AC-044: Recommendations section shows 3-5 actionable items",
+        "AC-045: Key moments section with timestamp links",
+        "AC-046: Metrics displayed with visual indicators",
+        "AC-047: Report page loads within 1.5 seconds",
+        "AC-048: Report responsive on mobile and desktop"
+      ],
+      "api_endpoints": [
+        "GET /reports/{report_id}"
+      ],
+      "data_model_entities": ["reports"]
+    },
+    {
+      "id": "F009",
+      "name": "Report Sharing",
+      "description": "Share analysis reports via unique public URLs",
+      "user_story": "US-009",
+      "dependencies": ["F008"],
+      "milestone": "M4",
+      "priority": 9,
+      "estimated_complexity": "medium",
+      "files_to_create": [
+        "src/app/share/[hash]/page.tsx",
+        "src/components/share/ShareButton.tsx",
+        "src/components/share/ShareDialog.tsx",
+        "src/components/share/CopyLinkButton.tsx",
+        "src/lib/share/clipboard.ts",
+        "api/services/share_service.py",
+        "api/models/share_link.py",
+        "api/schemas/share.py",
+        "workers/tasks/generate_og_image.py"
+      ],
+      "files_to_modify": [
+        "src/app/report/[id]/page.tsx",
+        "api/routers/reports.py"
+      ],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": true,
+        "screenshots": true
+      },
+      "bdd_scenarios": [
+        "specs/bdd/sharing.feature#Report shows share button in private state",
+        "specs/bdd/sharing.feature#User enables sharing and gets unique URL",
+        "specs/bdd/sharing.feature#User copies share link to clipboard",
+        "specs/bdd/sharing.feature#Shared report accessible without login",
+        "specs/bdd/sharing.feature#User disables sharing",
+        "specs/bdd/sharing.feature#Disabled share link returns error",
+        "specs/bdd/sharing.feature#User re-enables sharing gets new URL",
+        "specs/bdd/sharing.feature#Shared report displays social preview"
+      ],
+      "acceptance_criteria": [
+        "AC-049: Share button shows on report page (default private)",
+        "AC-050: Enable sharing generates unique URL",
+        "AC-051: Shared URL accessible without authentication",
+        "AC-052: Copy Link copies to clipboard with confirmation",
+        "AC-053: Shared report shows social preview cards",
+        "AC-054: Disabling sharing invalidates the URL",
+        "AC-055: Re-enabling generates new unique URL"
+      ],
+      "api_endpoints": [
+        "GET /reports/{report_id}/share",
+        "POST /reports/{report_id}/share",
+        "DELETE /reports/{report_id}/share"
+      ],
+      "data_model_entities": ["share_links"]
+    },
+    {
+      "id": "F010",
+      "name": "Report History Dashboard",
+      "description": "Dashboard listing past analysis reports with navigation and deletion",
+      "user_story": "US-010",
+      "dependencies": ["F001", "F008"],
+      "milestone": "M4",
+      "priority": 10,
+      "estimated_complexity": "low",
+      "files_to_create": [
+        "src/app/dashboard/page.tsx",
+        "src/components/dashboard/ReportList.tsx",
+        "src/components/dashboard/ReportListItem.tsx",
+        "src/components/dashboard/EmptyState.tsx",
+        "src/components/dashboard/DeleteDialog.tsx",
+        "src/components/dashboard/LoadingSkeleton.tsx"
+      ],
+      "files_to_modify": [
+        "api/routers/reports.py"
+      ],
+      "test_requirements": {
+        "unit": true,
+        "integration": true,
+        "e2e": true,
+        "screenshots": true
+      },
+      "bdd_scenarios": [
+        "specs/bdd/dashboard.feature#Dashboard displays report list sorted by date",
+        "specs/bdd/dashboard.feature#Report list item shows thumbnail and summary",
+        "specs/bdd/dashboard.feature#User navigates to report from list",
+        "specs/bdd/dashboard.feature#User deletes report with confirmation",
+        "specs/bdd/dashboard.feature#Dashboard shows empty state for new user",
+        "specs/bdd/dashboard.feature#Dashboard loading state shows skeletons"
+      ],
+      "acceptance_criteria": [
+        "AC-056: Dashboard lists reports sorted by date descending",
+        "AC-057: List items show thumbnail, date, summary indicator",
+        "AC-058: Clicking report navigates to full view",
+        "AC-059: Delete report shows confirmation dialog",
+        "AC-060: Empty state shows upload CTA"
+      ],
+      "api_endpoints": [
+        "GET /reports/list",
+        "DELETE /reports/{report_id}"
+      ],
+      "data_model_entities": ["reports"]
+    }
+  ],
+  "milestones": [
+    {
+      "id": "M1",
+      "name": "Core Infrastructure",
+      "description": "Foundation for all authenticated features",
+      "features": ["F001"],
+      "target_week": 1,
+      "criteria": "OAuth login functional with both providers, JWT session management working, protected route middleware deployed"
+    },
+    {
+      "id": "M2",
+      "name": "Upload and Selection",
+      "description": "Complete input flow from upload to analysis configuration",
+      "features": ["F002", "F003", "F004"],
+      "target_week": 2,
+      "criteria": "Chunked upload with resume, thumbnail extraction, subject selection, body specs form all functional"
+    },
+    {
+      "id": "M3",
+      "name": "Processing Pipeline",
+      "description": "Backend video processing and AI analysis",
+      "features": ["F005", "F006", "F007"],
+      "target_week": 4,
+      "criteria": "Pose estimation, stamp detection, and LLM analysis working with p95 under 5 minutes"
+    },
+    {
+      "id": "M4",
+      "name": "Report and Sharing",
+      "description": "Complete output flow with sharing and history",
+      "features": ["F008", "F009", "F010"],
+      "target_week": 5,
+      "criteria": "Report display, sharing, and dashboard all functional with responsive UI"
+    }
+  ],
+  "execution_order": [
+    "F001",
+    "F002",
+    "F003",
+    "F004",
+    "F005",
+    "F006",
+    "F007",
+    "F008",
+    "F009",
+    "F010"
+  ],
+  "critical_path": ["F001", "F002", "F003", "F005", "F006", "F007", "F008"],
+  "risks": [
+    {
+      "id": "R1",
+      "name": "MediaPipe Accuracy Insufficient",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "Test with 20+ real sparring videos, establish confidence threshold",
+      "contingency": "Evaluate alternative pose estimation models"
+    },
+    {
+      "id": "R2",
+      "name": "LLM Output Quality Inconsistent",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "Extensive prompt engineering, domain expert review",
+      "contingency": "Add human review queue for edge cases"
+    },
+    {
+      "id": "R3",
+      "name": "Video Processing Exceeds 5-Minute Target",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "Profile pipeline stages, optimize batch processing",
+      "contingency": "GPU workers for faster inference"
+    },
+    {
+      "id": "R4",
+      "name": "Upload Failures on Mobile Networks",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "Resumable chunked upload, client-side retry",
+      "contingency": "Reduce chunk size, add offline queue"
+    },
+    {
+      "id": "R5",
+      "name": "OAuth Provider Downtime",
+      "likelihood": "low",
+      "impact": "high",
+      "mitigation": "Support both Kakao and Google, cache sessions",
+      "contingency": "Email/password backup auth post-launch"
+    },
+    {
+      "id": "R6",
+      "name": "LLM API Rate Limits",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "Exponential backoff, queue management",
+      "contingency": "LLM quota alerts, self-hosted model evaluation"
+    }
+  ],
+  "test_strategy": {
+    "unit": {
+      "framework_backend": "pytest",
+      "framework_frontend": "jest",
+      "coverage_target": 80
+    },
+    "integration": {
+      "framework_backend": "pytest + TestClient",
+      "framework_frontend": "playwright"
+    },
+    "e2e": {
+      "framework": "playwright",
+      "critical_journeys": [
+        "new_user_signup_to_report",
+        "return_user_dashboard_to_share",
+        "public_share_link_view"
+      ]
+    },
+    "performance": {
+      "framework": "k6",
+      "targets": {
+        "concurrent_uploads": 50,
+        "concurrent_users": 100,
+        "api_p95_ms": 500,
+        "processing_p95_minutes": 5
+      }
+    },
+    "accessibility": {
+      "framework": "axe-core",
+      "standard": "WCAG 2.1 AA"
+    }
+  },
+  "definition_of_done": {
+    "per_feature": [
+      "All acceptance criteria verified",
+      "All BDD scenarios pass with runtime evidence",
+      "Unit tests written with TDD",
+      "Integration tests pass",
+      "UI states captured (loading/empty/error/success)",
+      "Mobile and desktop screenshots",
+      "Code review completed",
+      "No mock/stub code in production paths"
+    ],
+    "release": [
+      "All 10 features pass verification",
+      "System E2E test passes",
+      "p95 processing under 5 minutes",
+      "Page loads under 2 seconds",
+      "OAuth tokens handled securely",
+      "aXe audit zero critical issues",
+      "Korean localization complete",
+      "Quality audit passes",
+      "HANDOFF.md published"
+    ]
+  }
+}

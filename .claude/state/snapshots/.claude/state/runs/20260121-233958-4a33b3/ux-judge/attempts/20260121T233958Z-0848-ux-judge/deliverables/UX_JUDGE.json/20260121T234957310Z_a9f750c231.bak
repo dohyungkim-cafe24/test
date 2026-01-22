@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.1",
+  "feature_id": "F008",
+  "verdict": "FAIL",
+  "visual_evidence": {
+    "reviewed": true,
+    "screenshots_dir": ".claude/state/runs/20260121-233958-4a33b3/tester/attempts/20260121T233958Z-1478-test/evidence/screenshots",
+    "screenshots": [
+      {
+        "path": "evidence/screenshots/report_page.png",
+        "observed": "File exists but appears to be a minimal/corrupt image (approximately 1x1 pixel green image). Does not show the Report Display UI, metrics, sections, or any recognizable interface elements.",
+        "assertions": [
+          "Report page with Summary section visible - FAIL (no content visible)",
+          "Metrics grid with visual indicators - FAIL (no content visible)",
+          "Strengths/Weaknesses/Recommendations sections - FAIL (no content visible)",
+          "Key moments timeline - FAIL (no content visible)",
+          "AI disclaimer visible - FAIL (no content visible)",
+          "Responsive layout demonstration - FAIL (no content visible)"
+        ],
+        "status": "FAIL"
+      }
+    ],
+    "notes": "Only 1 screenshot found. The file is effectively empty/corrupt. TESTER_REPORT explicitly states: 'No UI screenshots captured. Reason: Dev server not running, UI requires authentication'. Visual evidence requirement is not satisfied."
+  },
+  "violations": [
+    {
+      "id": "UXJ-001",
+      "severity": "BLOCKER",
+      "contract_ref": "UX_CONTRACT.md > Evidence > Required Evidence for Launch > Journey Screenshots",
+      "description": "Missing valid screenshots for Report Display (US-008) user journey. The single screenshot file (report_page.png) is corrupt/empty and does not show the report UI.",
+      "evidence": [
+        "evidence/screenshots/report_page.png (corrupt - 1x1 pixel)",
+        "TESTER_REPORT.md section 5.2 explicitly states 'No UI screenshots captured'"
+      ],
+      "fix": {
+        "summary": "Capture valid screenshots of the Report Display page showing all required sections",
+        "steps": [
+          "Start backend server: cd backend && uvicorn api.main:app --reload",
+          "Start frontend server: cd frontend && npm run dev",
+          "Create test data with a valid report in database",
+          "Navigate to /report/{report_id} with authenticated session",
+          "Capture screenshots at 375px (mobile) and 1280px (desktop) viewports",
+          "Ensure screenshots show: Summary, Metrics grid, Strengths, Weaknesses, Recommendations, Key Moments, AI disclaimer"
+        ],
+        "verify": [
+          "Each screenshot file opens and displays recognizable UI content",
+          "All 8 ACs for F008 have visual evidence",
+          "Mobile and desktop viewports both captured"
+        ]
+      }
+    },
+    {
+      "id": "UXJ-002",
+      "severity": "BLOCKER",
+      "contract_ref": "UX_CONTRACT.md > Evidence > Required Evidence for Launch > State Screenshots",
+      "description": "Missing UI state screenshots for Report Display. Required states: Loading (skeleton), Error, Success (loaded report). None captured.",
+      "evidence": [
+        "evidence/screenshots/ contains only 1 file which is corrupt",
+        "UI_STATES.md specifies Report View Loading states with skeleton patterns"
+      ],
+      "fix": {
+        "summary": "Capture screenshots for each UI state of the Report page",
+        "steps": [
+          "Capture Loading state: Show skeleton loaders for header, summary, metrics, sections",
+          "Capture Error state: Simulate 404 or network error to show error UI",
+          "Capture Success state: Full report with all sections populated"
+        ],
+        "verify": [
+          "Loading skeleton matches UI_STATES.md specification",
+          "Error state shows actionable message per COPY.md",
+          "Success state shows all report sections"
+        ]
+      }
+    },
+    {
+      "id": "UXJ-003",
+      "severity": "BLOCKER",
+      "contract_ref": "UX_CONTRACT.md > Evidence > Required Evidence for Launch > Mobile Screenshots",
+      "description": "Missing mobile viewport (375px) screenshot for Report Display. Contract requires '100% functional' evidence on mobile.",
+      "evidence": [
+        "No valid mobile screenshot exists",
+        "TESTER_REPORT.md Next Steps item 3 lists 'Mobile viewport' as needed"
+      ],
+      "fix": {
+        "summary": "Capture Report Display at 375px viewport",
+        "steps": [
+          "Set browser viewport to 375px width (iPhone SE)",
+          "Navigate to report page with test data",
+          "Capture full-page screenshot showing responsive layout"
+        ],
+        "verify": [
+          "Touch targets are 48x48px minimum",
+          "All sections readable and functional",
+          "No horizontal overflow"
+        ]
+      }
+    }
+  ],
+  "heuristic_findings": [
+    {
+      "id": "H-001",
+      "type": "positive",
+      "heuristic": "Consistency and standards",
+      "observation": "Code review shows MUI components used throughout (Paper, Typography, Accordion, LinearProgress, CircularProgress). Implementation follows M3 patterns.",
+      "evidence": "page.tsx imports and usage documented in TESTER_REPORT.md section 4.2"
+    },
+    {
+      "id": "H-002",
+      "type": "positive",
+      "heuristic": "Error prevention / Recognition rather than recall",
+      "observation": "Report page includes AI disclaimer prominently as required by Non-negotiables (UX_CONTRACT.md > Privacy and Trust > 7).",
+      "evidence": "TESTER_REPORT.md section 4.2 confirms AI disclaimer implemented"
+    },
+    {
+      "id": "H-003",
+      "type": "positive",
+      "heuristic": "Match between system and real world",
+      "observation": "Korean localization implemented with bilingual copy per COPY.md. Boxing terminology follows Korean standards.",
+      "evidence": "TESTER_REPORT.md section 6.3: 'Bilingual support (EN/KO) implemented throughout'"
+    },
+    {
+      "id": "H-004",
+      "type": "concern",
+      "heuristic": "Visibility of system status",
+      "observation": "Performance logging implemented (console.warn for >1500ms) but cannot verify actual performance without runtime evidence.",
+      "evidence": "page.tsx:358-362 per TESTER_REPORT.md; no Lighthouse report captured"
+    }
+  ],
+  "notes": "F008 Report Display implementation appears complete based on code review (TESTER_REPORT.md confirms all 8 ACs implemented). However, UX validation requires runtime visual evidence which is entirely missing. The single screenshot file is corrupt. Verdict is FAIL due to 3 BLOCKER violations related to missing visual evidence. After screenshots are captured showing the complete Report Display UI in multiple states and viewports, this feature can be re-evaluated.",
+  "created_at_utc": "2026-01-22T00:05:00Z"
+}

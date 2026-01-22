@@ -1,0 +1,34 @@
+# IA Map — TEMPLATE
+
+> Owner: ux-designer
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+>
+> Tip: for feature-specific routes/flows, annotate the section with `@F###` so downstream agents can slice UX per feature.
+
+## Inputs
+
+- docs/ux/UX_SPEC.md
+- docs/product/STORY_MAP.md (Launch scope)
+
+---
+
+## Sitemap
+
+PLACEHOLDER
+
+## Routes
+
+PLACEHOLDER
+
+## Key flows
+
+Map key user flows to routes (entry → success → ...), including deep links.
+
+PLACEHOLDER
+
+## Notes
+
+PLACEHOLDER

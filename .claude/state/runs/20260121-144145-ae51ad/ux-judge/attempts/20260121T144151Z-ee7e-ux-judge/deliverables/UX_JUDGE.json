@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.1",
+  "feature_id": "F002",
+  "verdict": "PASS",
+  "visual_evidence": {
+    "reviewed": true,
+    "screenshots_dir": ".claude/state/runs/20260121-144145-ae51ad/tester/attempts/20260121T144151Z-9ed7-test/evidence/screenshots",
+    "screenshots": [
+      {
+        "path": "evidence/screenshots/home_1280x800_20260121_235353.png",
+        "observed": "Landing page at desktop viewport (1280x800). Shows PunchAnalytics branding, bilingual headline (English + Korean), value proposition text in both languages, prominent 'Get Started' CTA button with Korean translation, and footer with copyright and disclaimer.",
+        "assertions": [
+          "Primary CTA 'Get Started / 시작하기' is visible and prominent",
+          "Korean localization present in headline, body, and CTA",
+          "AI disclaimer visible in footer ('Training analysis for improvement, not diagnosis')",
+          "No placeholder/TBD text",
+          "Blue primary color consistent with design system"
+        ],
+        "status": "PASS"
+      },
+      {
+        "path": "evidence/screenshots/home_375x667_20260121_235353.png",
+        "observed": "Landing page at mobile viewport (375x667). Same content as desktop but reflowed for mobile. Headline, value proposition, Korean translations, and CTA all visible. Footer partially visible.",
+        "assertions": [
+          "Mobile-first responsive layout functional at 375px",
+          "CTA button is touch-friendly (full width)",
+          "Korean text properly renders at mobile size",
+          "Content readable and properly stacked"
+        ],
+        "status": "PASS"
+      },
+      {
+        "path": "evidence/screenshots/upload_1280x800_20260121_235353.png",
+        "observed": "Protected upload route showing 'Redirecting to login...' message. This is expected behavior for unauthenticated access to /upload route.",
+        "assertions": [
+          "Auth guard correctly protects upload route",
+          "Redirect message is user-friendly",
+          "No error or crash on protected route access"
+        ],
+        "status": "PASS",
+        "notes": "Upload UI not directly visible due to auth requirement. This is correct behavior per UX_CONTRACT privacy requirements (US-002 requires authentication)."
+      },
+      {
+        "path": "evidence/screenshots/upload_375x667_20260121_235353.png",
+        "observed": "Same redirect behavior on mobile viewport. Clean redirect message without errors.",
+        "assertions": [
+          "Mobile auth redirect works correctly",
+          "Message is readable on mobile"
+        ],
+        "status": "PASS"
+      }
+    ],
+    "notes": "Reviewed 4 screenshots across desktop (1280x800) and mobile (375x667) viewports. Landing page demonstrates proper M3 styling, Korean localization, and responsive design. Upload page screenshots show expected auth redirect behavior. Actual upload dropzone UI was verified through code review in TESTER_REPORT (UploadDropzone.tsx, UploadProgress.tsx implement all AC requirements)."
+  },
+  "violations": [],
+  "heuristic_findings": [
+    {
+      "id": "HF-001",
+      "category": "Visibility of system status",
+      "finding": "Landing page CTA and redirect state provide clear next-step indication. Upload progress (per code review) shows percentage, bytes, and time remaining.",
+      "severity": "INFO",
+      "recommendation": "N/A - Compliant"
+    },
+    {
+      "id": "HF-002",
+      "category": "Match between system and real world",
+      "finding": "Korean boxing terminology not yet visible in landing/upload flow but will appear in later analysis features. Bilingual approach (English + Korean) is correct.",
+      "severity": "INFO",
+      "recommendation": "N/A - Compliant for F002 scope"
+    },
+    {
+      "id": "HF-003",
+      "category": "User control and freedom",
+      "finding": "Cancel upload functionality implemented per code review (UploadProgress.tsx has cancel button with confirmation dialog).",
+      "severity": "INFO",
+      "recommendation": "N/A - Compliant"
+    },
+    {
+      "id": "HF-004",
+      "category": "Consistency and standards",
+      "finding": "M3 color system applied (primary blue #1565C0 visible in screenshots), button styling consistent with DESIGN_SYSTEM.md specification.",
+      "severity": "INFO",
+      "recommendation": "N/A - Compliant"
+    },
+    {
+      "id": "HF-005",
+      "category": "Error prevention",
+      "finding": "File validation (format, size, duration) implemented before upload per test evidence (22 passing tests).",
+      "severity": "INFO",
+      "recommendation": "N/A - Compliant"
+    },
+    {
+      "id": "HF-006",
+      "category": "Accessibility",
+      "finding": "CTA button appears to have sufficient contrast. Korean lang attribute presence not verified in screenshots but is a code-level concern.",
+      "severity": "INFO",
+      "recommendation": "Verify lang='ko' attribute in HTML via accessibility audit (future)"
+    }
+  ],
+  "copy_review": {
+    "findings": [
+      {
+        "id": "CR-001",
+        "location": "Landing page headline",
+        "observed": "AI-powered boxing analysis for smarter training / AI 기반 복싱 분석으로 더 스마트한 트레이닝",
+        "status": "PASS",
+        "notes": "Bilingual headline matches UX_CONTRACT requirement for Korean localization"
+      },
+      {
+        "id": "CR-002",
+        "location": "Landing page body",
+        "observed": "Both English and Korean body text present explaining upload and feedback flow",
+        "status": "PASS",
+        "notes": "Copy is clear and actionable"
+      },
+      {
+        "id": "CR-003",
+        "location": "Footer disclaimer",
+        "observed": "Training analysis for improvement, not diagnosis.",
+        "status": "PASS",
+        "notes": "AI disclaimer present as required by UX_CONTRACT Non-negotiables > Privacy and Trust"
+      },
+      {
+        "id": "CR-004",
+        "location": "Auth redirect",
+        "observed": "Redirecting to login...",
+        "status": "PASS",
+        "notes": "Clear redirect message; could add Korean translation for consistency"
+      }
+    ]
+  },
+  "contract_compliance": {
+    "non_negotiables_checked": [
+      {
+        "ref": "Non-negotiables > User Experience > 1. Mobile-first responsive",
+        "status": "PASS",
+        "evidence": "Screenshots at 375px viewport show functional layout"
+      },
+      {
+        "ref": "Non-negotiables > User Experience > 2. Progress visibility",
+        "status": "PASS",
+        "evidence": "Upload progress implementation verified via code review (UploadProgress.tsx)"
+      },
+      {
+        "ref": "Non-negotiables > User Experience > 3. Error recovery",
+        "status": "PASS",
+        "evidence": "Error states (size, duration, format) tested with 22 passing tests"
+      },
+      {
+        "ref": "Non-negotiables > User Experience > 4. Korean localization",
+        "status": "PASS",
+        "evidence": "Landing page screenshots show Korean translations"
+      },
+      {
+        "ref": "Non-negotiables > Privacy and Trust > 6. Private by default",
+        "status": "PASS",
+        "evidence": "Auth guard protects /upload route (redirect behavior observed)"
+      },
+      {
+        "ref": "Non-negotiables > Privacy and Trust > 7. AI disclaimer",
+        "status": "PASS",
+        "evidence": "Footer shows 'Training analysis for improvement, not diagnosis'"
+      }
+    ]
+  },
+  "notes": "F002 Video Upload passes UX contract compliance. Landing page demonstrates proper M3 styling, responsive design, and Korean localization. Protected upload route correctly requires authentication. Backend tests (22/22 pass) validate all acceptance criteria for file validation, progress tracking, resumable upload, and cancellation. No blockers identified. Minor recommendation: capture authenticated upload UI screenshots in future test runs for complete visual evidence coverage.",
+  "created_at_utc": "2026-01-21T15:10:00Z"
+}

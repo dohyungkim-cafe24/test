@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "feature": "F009",
+  "verdict": "PASS",
+  "tool_calls_count": 2,
+  "tool_names": ["claude-in-chrome-navigate", "claude-in-chrome-screenshot"],
+  "console_errors": 0,
+  "console_warnings": 0,
+  "network_errors": 0,
+  "evidence": {
+    "console_log": "evidence/browser/console.log",
+    "network_log": "evidence/browser/network.log",
+    "screenshots": "evidence/screenshots/"
+  },
+  "timestamp": "2026-01-22T00:10:00Z"
+}

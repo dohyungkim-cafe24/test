@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "generated_by": "traceability_generate.py",
+  "source": "bdd_index",
+  "traceability": []
+}

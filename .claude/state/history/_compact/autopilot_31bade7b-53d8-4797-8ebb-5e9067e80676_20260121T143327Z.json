@@ -1,0 +1,14 @@
+{
+  "active": true,
+  "enabled": true,
+  "last_block_reason": "AUTOPILOT CONTINUE: pipeline next_stage=build next_feature=F002. Run /agi-autopilot. Continue /agi-autopilot until next_stage=release and gates are OK. Context: projects/punch-analytics/.claude/state/context.md",
+  "last_enable_note": "create punch-analytics",
+  "last_progress_key": "proj=projects/punch-analytics|stage=test|run=-|next=build|feat=F002|ok=1|fail=|run_mtime=0",
+  "last_progress_utc": "2026-01-21T14:15:44Z",
+  "max_stop_blocks": 50,
+  "mode": "run",
+  "progress_key": "proj=projects/punch-analytics|stage=test|run=-|next=build|feat=F002|ok=1|fail=|run_mtime=0",
+  "source": "autopilot_state.py",
+  "stop_blocks": 1,
+  "updated_utc": "2026-01-21T14:15:44Z"
+}

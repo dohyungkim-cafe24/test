@@ -1,0 +1,44 @@
+# Plan — TEMPLATE
+
+> Create via /agi-plan (tech-lead -> publish)
+> Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/MARKET_BENCHMARK.md
+- docs/product/STORY_MAP.md (Launch scope)
+- docs/ux/UX_CONTRACT.md
+- docs/ux/DESIGN_SYSTEM.md
+- features.json
+- specs/bdd/TRACEABILITY.json
+- specs/bdd/BDD_INDEX.json
+- docs/engineering/ARCHITECTURE.md
+- docs/engineering/API.md
+- docs/engineering/DATA_MODEL.md
+
+---
+
+## Scope
+
+PLACEHOLDER
+
+## Milestones
+
+PLACEHOLDER
+
+## Critical path
+
+PLACEHOLDER
+
+## Risks
+
+PLACEHOLDER
+
+## Test strategy
+
+PLACEHOLDER
+
+## Definition of Done
+
+PLACEHOLDER

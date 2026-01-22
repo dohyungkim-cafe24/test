@@ -1,0 +1,50 @@
+# TRACEABILITY — TEMPLATE
+
+> Canonical traceability file. Promoted by `/agi-bdd`.
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real (promoted) version.
+>
+> **Machine-readable contract:** The YAML block below is required once BDD exists.
+
+---
+
+## Inputs
+
+- docs/product/PRD.md
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/MARKET_BENCHMARK.md
+- docs/product/STORY_MAP.md (Launch scope)
+- docs/product/USER_STORIES.md
+- docs/ux/UX_CONTRACT.md
+- docs/ux/DESIGN_SYSTEM.md
+
+---
+
+## Traceability mapping (authoritative)
+
+> Preferred machine-readable source: `specs/bdd/TRACEABILITY.json`.
+>
+> Compatibility: the fenced YAML block below is still required by some legacy
+> scripts; keep it in sync with TRACEABILITY.json.
+
+```yaml
+{
+  "traceability": []
+}
+```
+
+---
+
+## Human notes
+
+### Rules
+- Each `user_story` must exist in `docs/product/USER_STORIES.md`.
+- Each `feature` must exist in `features.json`.
+- Each `gherkin_file` must exist under `specs/bdd/`.
+- Every referenced scenario name must exist in that `.feature` file.
+- All **Launch-scope** user stories (from `docs/product/STORY_MAP.md` -> `## Launch`) must map to at least one feature and at least one scenario.
+
+### Common failure patterns
+- User story IDs in prose but not in YAML.
+- Scenario names drifted (changed in `.feature` but not updated here).
+- Missing `@Fxxx` tags in `.feature` scenarios.

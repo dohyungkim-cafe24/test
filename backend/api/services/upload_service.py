@@ -1,0 +1,469 @@
+"""Upload service for handling chunked video uploads.
+
+@feature F002 - Video Upload
+
+Implements:
+- AC-006: Valid video file upload with progress indicator
+- AC-007: Upload complete navigates to subject selection
+- AC-011: Network interruption resumes upload automatically
+- AC-012: Cancel upload discards partial upload
+"""
+import hashlib
+import math
+import os
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Optional
+from uuid import UUID, uuid4
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from api.config import get_settings
+from api.models.upload import UploadChunk, UploadSession, Video
+from api.schemas.upload import CHUNK_SIZE
+
+
+class UploadError(Exception):
+    """Base exception for upload errors."""
+
+    pass
+
+
+class SessionNotFoundError(UploadError):
+    """Upload session not found."""
+
+    pass
+
+
+class SessionExpiredError(UploadError):
+    """Upload session has expired."""
+
+    pass
+
+
+class ChunkExistsError(UploadError):
+    """Chunk has already been uploaded."""
+
+    def __init__(self, chunk_number: int):
+        self.chunk_number = chunk_number
+        super().__init__(f"Chunk {chunk_number} already uploaded")
+
+
+class IncompleteUploadError(UploadError):
+    """Upload is not complete (missing chunks)."""
+
+    pass
+
+
+class UploadService:
+    """Service for managing chunked video uploads."""
+
+    def __init__(self):
+        """Initialize upload service."""
+        self.settings = get_settings()
+        # For local development, use filesystem storage
+        # In production, this would be S3/GCS
+        self.storage_base = Path(os.getenv("UPLOAD_STORAGE_PATH", "/tmp/punch_uploads"))
+        self.storage_base.mkdir(parents=True, exist_ok=True)
+
+    async def initiate_upload(
+        self,
+        session: AsyncSession,
+        user_id: UUID,
+        filename: str,
+        file_size: int,
+        content_type: str,
+        duration_seconds: int,
+    ) -> dict:
+        """Initiate a new chunked upload session.
+
+        Args:
+            session: Database session
+            user_id: ID of the uploading user
+            filename: Original filename
+            file_size: Total file size in bytes
+            content_type: MIME type of the video
+            duration_seconds: Video duration in seconds
+
+        Returns:
+            Upload session details including upload_id, chunk_size, total_chunks
+        """
+        total_chunks = math.ceil(file_size / CHUNK_SIZE)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+        upload_session = UploadSession(
+            user_id=user_id,
+            filename=filename,
+            file_size=file_size,
+            content_type=content_type,
+            duration_seconds=duration_seconds,
+            chunk_size=CHUNK_SIZE,
+            total_chunks=total_chunks,
+            chunks_received=0,
+            bytes_received=0,
+            status="active",
+            expires_at=expires_at,
+        )
+
+        session.add(upload_session)
+        await session.flush()
+        await session.refresh(upload_session)
+
+        return {
+            "upload_id": str(upload_session.id),
+            "chunk_size": CHUNK_SIZE,
+            "total_chunks": total_chunks,
+            "expires_at": expires_at,
+        }
+
+    async def upload_chunk(
+        self,
+        session: AsyncSession,
+        upload_id: UUID,
+        chunk_number: int,
+        chunk_data: bytes,
+        user_id: UUID,
+        content_md5: Optional[str] = None,
+    ) -> dict:
+        """Upload a single chunk.
+
+        Args:
+            session: Database session
+            upload_id: Upload session ID
+            chunk_number: 0-indexed chunk number
+            chunk_data: Raw chunk bytes
+            user_id: ID of the requesting user (for ownership verification)
+            content_md5: Optional MD5 hash for verification
+
+        Returns:
+            Chunk upload response with progress info
+
+        Raises:
+            SessionNotFoundError: If session doesn't exist or user doesn't own it
+            SessionExpiredError: If session has expired
+            ChunkExistsError: If chunk was already uploaded
+        """
+        upload_session = await self._get_session(session, upload_id, user_id)
+
+        # Check for duplicate chunk
+        for existing_chunk in upload_session.chunks:
+            if existing_chunk.chunk_number == chunk_number:
+                raise ChunkExistsError(chunk_number)
+
+        # Validate chunk number
+        if chunk_number < 0 or chunk_number >= upload_session.total_chunks:
+            raise UploadError(f"Invalid chunk number: {chunk_number}")
+
+        # Store chunk
+        storage_key = await self._store_chunk(upload_id, chunk_number, chunk_data)
+
+        # Calculate MD5 if not provided
+        if content_md5 is None:
+            content_md5 = hashlib.md5(chunk_data).hexdigest()
+
+        # Record chunk in database
+        chunk = UploadChunk(
+            session_id=upload_id,
+            chunk_number=chunk_number,
+            size_bytes=len(chunk_data),
+            md5_hash=content_md5,
+            storage_key=storage_key,
+        )
+        session.add(chunk)
+
+        # Update session progress
+        upload_session.chunks_received += 1
+        upload_session.bytes_received += len(chunk_data)
+
+        # Extend expiration on activity
+        upload_session.expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+        await session.flush()
+
+        total_received = upload_session.bytes_received
+        progress_percent = int((total_received / upload_session.file_size) * 100)
+
+        return {
+            "chunk_number": chunk_number,
+            "received_bytes": len(chunk_data),
+            "total_received": total_received,
+            "progress_percent": min(progress_percent, 100),
+        }
+
+    async def complete_upload(
+        self,
+        session: AsyncSession,
+        upload_id: UUID,
+        user_id: UUID,
+    ) -> dict:
+        """Complete the upload and create video record.
+
+        Args:
+            session: Database session
+            upload_id: Upload session ID
+            user_id: ID of the requesting user (for ownership verification)
+
+        Returns:
+            Video creation response
+
+        Raises:
+            SessionNotFoundError: If session doesn't exist or user doesn't own it
+            IncompleteUploadError: If not all chunks received
+        """
+        upload_session = await self._get_session(session, upload_id, user_id)
+
+        # Verify all chunks received
+        if upload_session.chunks_received < upload_session.total_chunks:
+            raise IncompleteUploadError(
+                f"Missing chunks: received {upload_session.chunks_received}/{upload_session.total_chunks}"
+            )
+
+        # Assemble chunks into final video file
+        storage_key = await self._assemble_chunks(upload_session)
+
+        # Create video record
+        video = Video(
+            user_id=upload_session.user_id,
+            filename=upload_session.filename,
+            content_type=upload_session.content_type,
+            file_size=upload_session.file_size,
+            duration_seconds=upload_session.duration_seconds,
+            storage_key=storage_key,
+            upload_status="processing_thumbnails",
+            upload_completed_at=datetime.now(timezone.utc),
+        )
+        session.add(video)
+
+        # Mark upload session as completed
+        upload_session.status = "completed"
+        upload_session.completed_at = datetime.now(timezone.utc)
+
+        await session.flush()
+        await session.refresh(video)
+
+        return {
+            "video_id": str(video.id),
+            "status": video.upload_status,
+            "duration_seconds": video.duration_seconds,
+            "file_size": video.file_size,
+        }
+
+    async def cancel_upload(
+        self,
+        session: AsyncSession,
+        upload_id: UUID,
+        user_id: UUID,
+    ) -> dict:
+        """Cancel an in-progress upload.
+
+        Args:
+            session: Database session
+            upload_id: Upload session ID
+            user_id: ID of the requesting user (for ownership verification)
+
+        Returns:
+            Cancellation confirmation
+
+        Raises:
+            SessionNotFoundError: If session doesn't exist or user doesn't own it
+        """
+        upload_session = await self._get_session(session, upload_id, user_id)
+
+        # Delete stored chunks
+        await self._delete_chunks(upload_id, upload_session.total_chunks)
+
+        # Mark session as cancelled
+        upload_session.status = "cancelled"
+
+        await session.flush()
+
+        return {
+            "message": "Upload cancelled",
+            "upload_id": str(upload_id),
+        }
+
+    async def get_upload_status(
+        self,
+        session: AsyncSession,
+        upload_id: UUID,
+        user_id: UUID,
+    ) -> dict:
+        """Get current upload status for resumption.
+
+        Args:
+            session: Database session
+            upload_id: Upload session ID
+            user_id: ID of the requesting user (for ownership verification)
+
+        Returns:
+            Upload status with progress info
+        """
+        upload_session = await self._get_session(session, upload_id, user_id)
+
+        progress_percent = (
+            int((upload_session.chunks_received / upload_session.total_chunks) * 100)
+            if upload_session.total_chunks > 0
+            else 0
+        )
+
+        return {
+            "upload_id": str(upload_session.id),
+            "status": upload_session.status,
+            "chunks_received": upload_session.chunks_received,
+            "total_chunks": upload_session.total_chunks,
+            "progress_percent": progress_percent,
+            "expires_at": upload_session.expires_at,
+        }
+
+    async def get_received_chunks(
+        self,
+        session: AsyncSession,
+        upload_id: UUID,
+        user_id: UUID,
+    ) -> list[int]:
+        """Get list of received chunk numbers for resumption.
+
+        Args:
+            session: Database session
+            upload_id: Upload session ID
+            user_id: ID of the requesting user (for ownership verification)
+
+        Returns:
+            List of chunk numbers that have been received
+        """
+        upload_session = await self._get_session(session, upload_id, user_id)
+        return sorted([chunk.chunk_number for chunk in upload_session.chunks])
+
+    async def _get_session(
+        self,
+        session: AsyncSession,
+        upload_id: UUID,
+        user_id: UUID,
+    ) -> UploadSession:
+        """Get upload session by ID with ownership verification.
+
+        Args:
+            session: Database session
+            upload_id: Upload session ID
+            user_id: ID of the requesting user (for ownership verification)
+
+        Returns:
+            Upload session
+
+        Raises:
+            SessionNotFoundError: If session doesn't exist or user doesn't own it
+            SessionExpiredError: If session has expired
+        """
+        result = await session.execute(
+            select(UploadSession)
+            .options(selectinload(UploadSession.chunks))
+            .where(UploadSession.id == upload_id)
+        )
+        upload_session = result.scalar_one_or_none()
+
+        if upload_session is None:
+            raise SessionNotFoundError(f"Upload session not found: {upload_id}")
+
+        # Verify ownership - return same error to prevent enumeration
+        if upload_session.user_id != user_id:
+            raise SessionNotFoundError(f"Upload session not found: {upload_id}")
+
+        # Check if session has expired
+        if upload_session.status == "active":
+            if upload_session.expires_at < datetime.now(timezone.utc):
+                upload_session.status = "expired"
+                await session.flush()
+                raise SessionExpiredError(f"Upload session expired: {upload_id}")
+
+        if upload_session.status not in ("active",):
+            raise SessionExpiredError(f"Upload session is {upload_session.status}: {upload_id}")
+
+        return upload_session
+
+    async def _store_chunk(
+        self,
+        upload_id: UUID,
+        chunk_number: int,
+        chunk_data: bytes,
+    ) -> str:
+        """Store a chunk to storage.
+
+        Args:
+            upload_id: Upload session ID
+            chunk_number: Chunk number
+            chunk_data: Raw chunk bytes
+
+        Returns:
+            Storage key for the chunk
+        """
+        # For local development, use filesystem
+        # In production, this would upload to S3/GCS
+        chunk_dir = self.storage_base / str(upload_id)
+        chunk_dir.mkdir(parents=True, exist_ok=True)
+
+        chunk_path = chunk_dir / f"chunk_{chunk_number:05d}"
+        chunk_path.write_bytes(chunk_data)
+
+        return f"chunks/{upload_id}/chunk_{chunk_number:05d}"
+
+    async def _assemble_chunks(
+        self,
+        upload_session: UploadSession,
+    ) -> str:
+        """Assemble chunks into final video file.
+
+        Args:
+            upload_session: Upload session with all chunks
+
+        Returns:
+            Storage key for assembled video
+        """
+        # For local development, concatenate files
+        # In production, this would use S3 multipart upload completion
+        chunk_dir = self.storage_base / str(upload_session.id)
+        video_dir = self.storage_base / "videos" / str(upload_session.user_id)
+        video_dir.mkdir(parents=True, exist_ok=True)
+
+        video_id = uuid4()
+        ext = Path(upload_session.filename).suffix or ".mp4"
+        video_path = video_dir / f"{video_id}{ext}"
+
+        # Assemble chunks in order
+        with open(video_path, "wb") as outfile:
+            for i in range(upload_session.total_chunks):
+                chunk_path = chunk_dir / f"chunk_{i:05d}"
+                if chunk_path.exists():
+                    outfile.write(chunk_path.read_bytes())
+
+        # Clean up chunks
+        await self._delete_chunks(upload_session.id, upload_session.total_chunks)
+
+        return f"videos/{upload_session.user_id}/{video_id}{ext}"
+
+    async def _delete_chunks(
+        self,
+        upload_id: UUID,
+        total_chunks: int,
+    ) -> None:
+        """Delete stored chunks.
+
+        Args:
+            upload_id: Upload session ID
+            total_chunks: Total number of chunks to delete
+        """
+        chunk_dir = self.storage_base / str(upload_id)
+        if chunk_dir.exists():
+            for i in range(total_chunks):
+                chunk_path = chunk_dir / f"chunk_{i:05d}"
+                if chunk_path.exists():
+                    chunk_path.unlink()
+            try:
+                chunk_dir.rmdir()
+            except OSError:
+                pass  # Directory not empty or doesn't exist
+
+
+# Singleton instance
+upload_service = UploadService()

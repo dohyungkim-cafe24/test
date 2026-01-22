@@ -1,0 +1,739 @@
+{
+  "schema_version": 1,
+  "features": [
+    {
+      "file": "specs/bdd/auth.feature",
+      "name": "User Authentication",
+      "tags": [
+        "@F001",
+        "@US-001"
+      ],
+      "feature_id": "F001",
+      "scenarios": [
+        {
+          "name": "Successful Kakao OAuth login",
+          "type": "Scenario",
+          "tags": [
+            "@F001",
+            "@US-001",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Successful Google OAuth login",
+          "type": "Scenario",
+          "tags": [
+            "@F001",
+            "@US-001",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "User logs out successfully",
+          "type": "Scenario",
+          "tags": [
+            "@F001",
+            "@US-001",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Unauthenticated user redirected to login",
+          "type": "Scenario",
+          "tags": [
+            "@F001",
+            "@US-001",
+            "@auth-guard"
+          ]
+        },
+        {
+          "name": "Session expiration prompts re-authentication",
+          "type": "Scenario",
+          "tags": [
+            "@F001",
+            "@US-001",
+            "@session"
+          ]
+        },
+        {
+          "name": "OAuth login cancelled by user",
+          "type": "Scenario",
+          "tags": [
+            "@F001",
+            "@US-001",
+            "@error"
+          ]
+        },
+        {
+          "name": "OAuth provider unavailable",
+          "type": "Scenario",
+          "tags": [
+            "@F001",
+            "@US-001",
+            "@error",
+            "@network"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "specs/bdd/body-specs.feature",
+      "name": "Body Specification Input",
+      "tags": [
+        "@F004",
+        "@US-004"
+      ],
+      "feature_id": "F004",
+      "scenarios": [
+        {
+          "name": "User enters valid body specifications",
+          "type": "Scenario",
+          "tags": [
+            "@F004",
+            "@US-004",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Height below minimum shows validation error",
+          "type": "Scenario",
+          "tags": [
+            "@F004",
+            "@US-004",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "Height above maximum shows validation error",
+          "type": "Scenario",
+          "tags": [
+            "@F004",
+            "@US-004",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "Weight below minimum shows validation error",
+          "type": "Scenario",
+          "tags": [
+            "@F004",
+            "@US-004",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "Weight above maximum shows validation error",
+          "type": "Scenario",
+          "tags": [
+            "@F004",
+            "@US-004",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "All fields required for submission",
+          "type": "Scenario",
+          "tags": [
+            "@F004",
+            "@US-004",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "Body specs pre-filled for returning user",
+          "type": "Scenario",
+          "tags": [
+            "@F004",
+            "@US-004",
+            "@returning-user",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Invalid number format shows error",
+          "type": "Scenario",
+          "tags": [
+            "@F004",
+            "@US-004",
+            "@validation",
+            "@error"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "specs/bdd/dashboard.feature",
+      "name": "Report History Dashboard",
+      "tags": [
+        "@F010",
+        "@US-010"
+      ],
+      "feature_id": "F010",
+      "scenarios": [
+        {
+          "name": "Dashboard displays report list sorted by date",
+          "type": "Scenario",
+          "tags": [
+            "@F010",
+            "@US-010",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Report list item shows thumbnail and summary",
+          "type": "Scenario",
+          "tags": [
+            "@F010",
+            "@US-010",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "User navigates to report from list",
+          "type": "Scenario",
+          "tags": [
+            "@F010",
+            "@US-010",
+            "@happy-path",
+            "@navigation"
+          ]
+        },
+        {
+          "name": "User deletes report with confirmation",
+          "type": "Scenario",
+          "tags": [
+            "@F010",
+            "@US-010",
+            "@delete"
+          ]
+        },
+        {
+          "name": "Dashboard shows empty state for new user",
+          "type": "Scenario",
+          "tags": [
+            "@F010",
+            "@US-010",
+            "@empty-state"
+          ]
+        },
+        {
+          "name": "Dashboard loading state shows skeletons",
+          "type": "Scenario",
+          "tags": [
+            "@F010",
+            "@US-010",
+            "@loading"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "specs/bdd/processing.feature",
+      "name": "Video Processing Pipeline",
+      "tags": [
+        "@F005",
+        "@F006",
+        "@F007",
+        "@US-005",
+        "@US-006",
+        "@US-007"
+      ],
+      "feature_id": "F005",
+      "scenarios": [
+        {
+          "name": "Pose estimation extracts joint coordinates",
+          "type": "Scenario",
+          "tags": [
+            "@F005",
+            "@US-005",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Subject tracking maintains across frames",
+          "type": "Scenario",
+          "tags": [
+            "@F005",
+            "@US-005",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Processing status shows step progress",
+          "type": "Scenario",
+          "tags": [
+            "@F005",
+            "@US-005",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Pose estimation fails with poor video quality",
+          "type": "Scenario",
+          "tags": [
+            "@F005",
+            "@US-005",
+            "@error"
+          ]
+        },
+        {
+          "name": "Processing takes longer than expected",
+          "type": "Scenario",
+          "tags": [
+            "@F005",
+            "@US-005",
+            "@timeout"
+          ]
+        },
+        {
+          "name": "Strike detection identifies punch types",
+          "type": "Scenario",
+          "tags": [
+            "@F006",
+            "@US-006",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Defensive action detection identifies guards",
+          "type": "Scenario",
+          "tags": [
+            "@F006",
+            "@US-006",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Stamps include confidence scores",
+          "type": "Scenario",
+          "tags": [
+            "@F006",
+            "@US-006",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "No significant actions detected",
+          "type": "Scenario",
+          "tags": [
+            "@F006",
+            "@US-006",
+            "@edge-case"
+          ]
+        },
+        {
+          "name": "LLM generates strategic analysis",
+          "type": "Scenario",
+          "tags": [
+            "@F007",
+            "@US-007",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Analysis adapts to beginner experience level",
+          "type": "Scenario",
+          "tags": [
+            "@F007",
+            "@US-007",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Analysis adapts to competitive experience level",
+          "type": "Scenario",
+          "tags": [
+            "@F007",
+            "@US-007",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "LLM API failure triggers retry",
+          "type": "Scenario",
+          "tags": [
+            "@F007",
+            "@US-007",
+            "@error",
+            "@retry"
+          ]
+        },
+        {
+          "name": "LLM API exhausts retries",
+          "type": "Scenario",
+          "tags": [
+            "@F007",
+            "@US-007",
+            "@error"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "specs/bdd/report.feature",
+      "name": "Report Display",
+      "tags": [
+        "@F008",
+        "@US-008"
+      ],
+      "feature_id": "F008",
+      "scenarios": [
+        {
+          "name": "Report displays summary section",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Report displays strengths section",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Report displays weaknesses section",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Report displays recommendations section",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Report displays key moments with timestamps",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Report displays metrics with visualizations",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Report includes AI disclaimer",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@compliance"
+          ]
+        },
+        {
+          "name": "Report loads within performance target",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@performance"
+          ]
+        },
+        {
+          "name": "Report displays correctly on mobile viewport",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@responsive",
+            "@mobile"
+          ]
+        },
+        {
+          "name": "Report displays correctly on desktop viewport",
+          "type": "Scenario",
+          "tags": [
+            "@F008",
+            "@US-008",
+            "@responsive",
+            "@desktop"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "specs/bdd/sharing.feature",
+      "name": "Report Sharing",
+      "tags": [
+        "@F009",
+        "@US-009"
+      ],
+      "feature_id": "F009",
+      "scenarios": [
+        {
+          "name": "Report shows share button in private state",
+          "type": "Scenario",
+          "tags": [
+            "@F009",
+            "@US-009",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "User enables sharing and gets unique URL",
+          "type": "Scenario",
+          "tags": [
+            "@F009",
+            "@US-009",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "User copies share link to clipboard",
+          "type": "Scenario",
+          "tags": [
+            "@F009",
+            "@US-009",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Shared report accessible without login",
+          "type": "Scenario",
+          "tags": [
+            "@F009",
+            "@US-009",
+            "@happy-path",
+            "@public-access"
+          ]
+        },
+        {
+          "name": "User disables sharing",
+          "type": "Scenario",
+          "tags": [
+            "@F009",
+            "@US-009",
+            "@toggle"
+          ]
+        },
+        {
+          "name": "Disabled share link returns error",
+          "type": "Scenario",
+          "tags": [
+            "@F009",
+            "@US-009",
+            "@error",
+            "@public-access"
+          ]
+        },
+        {
+          "name": "User re-enables sharing gets new URL",
+          "type": "Scenario",
+          "tags": [
+            "@F009",
+            "@US-009",
+            "@toggle"
+          ]
+        },
+        {
+          "name": "Shared report displays social preview",
+          "type": "Scenario",
+          "tags": [
+            "@F009",
+            "@US-009",
+            "@social",
+            "@meta"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "specs/bdd/subject-selection.feature",
+      "name": "Subject Selection",
+      "tags": [
+        "@F003",
+        "@US-003"
+      ],
+      "feature_id": "F003",
+      "scenarios": [
+        {
+          "name": "Thumbnail grid displays extracted frames",
+          "type": "Scenario",
+          "tags": [
+            "@F003",
+            "@US-003",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "User selects subject from thumbnail",
+          "type": "Scenario",
+          "tags": [
+            "@F003",
+            "@US-003",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "User changes selection before confirmation",
+          "type": "Scenario",
+          "tags": [
+            "@F003",
+            "@US-003",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "User confirms subject selection",
+          "type": "Scenario",
+          "tags": [
+            "@F003",
+            "@US-003",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Single person auto-selected",
+          "type": "Scenario",
+          "tags": [
+            "@F003",
+            "@US-003",
+            "@single-person"
+          ]
+        },
+        {
+          "name": "No subjects detected in video",
+          "type": "Scenario",
+          "tags": [
+            "@F003",
+            "@US-003",
+            "@empty-state",
+            "@error"
+          ]
+        },
+        {
+          "name": "Thumbnail extraction loading state",
+          "type": "Scenario",
+          "tags": [
+            "@F003",
+            "@US-003",
+            "@loading"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "specs/bdd/upload.feature",
+      "name": "Video Upload",
+      "tags": [
+        "@F002",
+        "@US-002"
+      ],
+      "feature_id": "F002",
+      "scenarios": [
+        {
+          "name": "Successful video upload with valid file",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "Upload shows progress indicator",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@happy-path"
+          ]
+        },
+        {
+          "name": "File exceeds maximum size limit",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "Video duration too short",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "Video duration too long",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "Unsupported file format rejected",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@validation",
+            "@error"
+          ]
+        },
+        {
+          "name": "Upload resumes after network interruption",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@network",
+            "@resilience"
+          ]
+        },
+        {
+          "name": "User cancels upload in progress",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@cancel"
+          ]
+        },
+        {
+          "name": "Upload area shows empty state initially",
+          "type": "Scenario",
+          "tags": [
+            "@F002",
+            "@US-002",
+            "@empty-state"
+          ]
+        }
+      ]
+    }
+  ]
+}

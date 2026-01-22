@@ -1,0 +1,109 @@
+{
+  "timestamp": "2026-01-21T23:33:27",
+  "workspace_root": "/Users/briankim/Desktop/ai/agi-dev",
+  "has_active_project": true,
+  "project": {
+    "name": "projects/punch-analytics",
+    "path": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics"
+  },
+  "context_md": null,
+  "pipeline_status": {
+    "project": "projects/punch-analytics",
+    "project_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics",
+    "next_stage": "build",
+    "stages": {
+      "discover": {
+        "complete": true,
+        "missing": []
+      },
+      "ux": {
+        "complete": true,
+        "missing": []
+      },
+      "bdd": {
+        "complete": true,
+        "missing": []
+      },
+      "arch": {
+        "complete": true,
+        "missing": []
+      },
+      "plan": {
+        "complete": true,
+        "missing": []
+      }
+    },
+    "features": {
+      "total": 10,
+      "done": 1,
+      "passed": 1,
+      "next": "F002",
+      "progress": "1/10 (10%)"
+    },
+    "release_scope": {
+      "source": "story_map_launch",
+      "launch_user_stories": [
+        "US-001",
+        "US-002",
+        "US-003",
+        "US-004",
+        "US-005",
+        "US-006",
+        "US-007",
+        "US-008",
+        "US-009",
+        "US-010"
+      ],
+      "feature_ids": [
+        "F001",
+        "F002",
+        "F003",
+        "F004",
+        "F005",
+        "F006",
+        "F007",
+        "F008",
+        "F009",
+        "F010"
+      ],
+      "mapping_sources": [
+        "features_json",
+        "gherkin_tags",
+        "traceability"
+      ]
+    }
+  },
+  "autopilot": null,
+  "autopilot_blocked": null,
+  "latest_run": {
+    "run_id": "20260121-142752-dc05e2",
+    "path": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-142752-dc05e2",
+    "metadata": {
+      "run_id": "20260121-142752-dc05e2",
+      "scratch_dir": "scratch",
+      "deliverables_dir": "deliverables",
+      "evidence_dir": "evidence",
+      "sealed": false,
+      "created": "2026-01-21 23:27:52",
+      "agent": "reviewer",
+      "stage": "review",
+      "feature": "F002",
+      "status": "OPEN",
+      "result": null,
+      "note": null
+    },
+    "agents": [
+      "reviewer"
+    ]
+  },
+  "effective": {
+    "next_stage": "build",
+    "features_done": 1,
+    "features_total": 10,
+    "next_feature": "F002",
+    "autopilot_active": false,
+    "blocked": false,
+    "blocked_reason": "",
+    "action": "continue: /agi-loop --feature F002"
+  }
+}

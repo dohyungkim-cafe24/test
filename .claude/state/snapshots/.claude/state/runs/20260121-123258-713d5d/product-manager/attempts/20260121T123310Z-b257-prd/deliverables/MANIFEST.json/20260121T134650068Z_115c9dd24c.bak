@@ -1,0 +1,306 @@
+{
+  "contract_version": "1.6.8",
+  "stage": "discover",
+  "agent": "product-manager",
+  "write_once": false,
+  "deliverables": [
+    {
+      "kind": "file",
+      "src": "PRD.md",
+      "src_patch": "PRD.patch.json",
+      "dst": "docs/product/PRD.md",
+      "required": true,
+      "required_tokens": [
+        "Inputs",
+        "Problem",
+        "Goals",
+        "Non-goals",
+        "Success",
+        "Success metrics",
+        "Scope",
+        "Risks",
+        "Open questions"
+      ]
+    },
+    {
+      "kind": "file",
+      "src": "STORY_MAP.md",
+      "src_patch": "STORY_MAP.patch.json",
+      "dst": "docs/product/STORY_MAP.md",
+      "required": true,
+      "required_tokens": [
+        "Inputs",
+        "Vision",
+        "Backbone",
+        "Launch",
+        "US-",
+        "P0",
+        "P1",
+        "P2"
+      ]
+    },
+    {
+      "kind": "file",
+      "src": "REQUIREMENTS_BASELINE.md",
+      "src_patch": "REQUIREMENTS_BASELINE.patch.json",
+      "dst": "docs/product/REQUIREMENTS_BASELINE.md",
+      "required": true,
+      "required_tokens": [
+        "Inputs",
+        "Raw input",
+        "Interpretation",
+        "In scope",
+        "Out of scope",
+        "Non-negotiables",
+        "Quality bar",
+        "Assumptions"
+      ]
+    },
+    {
+      "kind": "file",
+      "src": "MARKET_BENCHMARK.md",
+      "src_patch": "MARKET_BENCHMARK.patch.json",
+      "dst": "docs/product/MARKET_BENCHMARK.md",
+      "required": true,
+      "required_tokens": [
+        "Inputs",
+        "Comparable products",
+        "Feature parity and gaps",
+        "Quality bar",
+        "Sources"
+      ]
+    }
+  ],
+  "traceability_gate": {
+    "enabled_from_stage": "bdd",
+    "require_traceability_yaml": true,
+    "require_feature_tags": true,
+    "require_launch_coverage": true,
+    "require_p0_coverage": false,
+    "launch_scope_source": "docs/product/STORY_MAP.md#Launch"
+  },
+  "stage_inputs": {
+    "discover": [
+      "docs/DOC_CONTRACT.md",
+      "(user prompt: captured in run context)"
+    ],
+    "ux": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "docs/product/PRD.md",
+      "(optional) docs/product/PERSONAS.md",
+      "(optional) docs/product/USER_STORIES.md",
+      "(optional) docs/ux/INSIGHTS.md",
+      "(optional) docs/ux/RISKS_AND_ASSUMPTIONS.md"
+    ],
+    "bdd": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "(optional) docs/product/USER_STORIES.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/UI_STATES.md",
+      "docs/ux/COPY.md"
+    ],
+    "arch": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "specs/bdd/BDD_INDEX.json"
+    ],
+    "plan": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/UX_REPORT.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/UI_STATES.md",
+      "docs/ux/COPY.md",
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md",
+      "specs/bdd/BDD_INDEX.json"
+    ],
+    "build": [
+      "plan.json",
+      "features.json",
+      "(optional) specs/bdd/BDD_INDEX.json",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/design_tokens.json",
+      "docs/ux/UI_STATES.md",
+      "(optional) docs/ux/UX_DIGEST.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/COPY.md",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md"
+    ],
+    "test": [
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/design_tokens.json",
+      "docs/ux/UI_STATES.md",
+      "(optional) docs/ux/UX_DIGEST.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/COPY.md"
+    ],
+    "release": [
+      "features.json",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/operations/RUNBOOK.md",
+      "docs/operations/RELEASE_NOTES.md",
+      "(evidence) HANDOFF.md (project root)",
+      "(evidence) QUALITY_AUDIT.md (quality-auditor run)"
+    ],
+    "quality": [
+      "features.json",
+      "(optional) specs/bdd/BDD_INDEX.json",
+      "docs/engineering/RISK_REGISTER.md",
+      "(optional) docs/engineering/THREAT_MODEL.md",
+      "(optional) docs/engineering/SECURITY_REVIEW.md",
+      "(optional) docs/engineering/OPERABILITY.md",
+      "(optional) docs/adr/ADR_INDEX.json",
+      "docs/** (canonical)",
+      "specs/** (canonical)",
+      "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+    ]
+  },
+  "stage_inputs_by_agent": {
+    "build": {
+      "executor": [
+        "plan.json",
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md",
+        "(optional) docs/ux/UX_DIGEST.md",
+        "docs/ux/UX_SPEC.md",
+        "docs/ux/IA_MAP.md",
+        "docs/ux/COPY.md",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ],
+      "reviewer": [
+        "plan.json",
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ]
+    },
+    "test": {
+      "tester": [
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md",
+        "(optional) docs/ux/UX_DIGEST.md",
+        "docs/ux/UX_SPEC.md",
+        "docs/ux/IA_MAP.md",
+        "docs/ux/COPY.md"
+      ],
+      "ux-validator": [
+        "features.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md"
+      ],
+      "ux-judge": [
+        "features.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md"
+      ]
+    },
+    "quality": {
+      "*": [
+        "features.json",
+        "docs/engineering/RISK_REGISTER.md",
+        "(optional) docs/engineering/THREAT_MODEL.md",
+        "(optional) docs/engineering/SECURITY_REVIEW.md",
+        "(optional) docs/engineering/OPERABILITY.md",
+        "(optional) docs/adr/ADR_INDEX.json",
+        "docs/** (canonical)",
+        "specs/** (canonical)",
+        "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+      ],
+      "quality-auditor": [
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/engineering/RISK_REGISTER.md",
+        "(optional) docs/engineering/THREAT_MODEL.md",
+        "(optional) docs/engineering/SECURITY_REVIEW.md",
+        "(optional) docs/engineering/OPERABILITY.md",
+        "(optional) docs/adr/ADR_INDEX.json",
+        "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+      ]
+    },
+    "arch": {
+      "architect": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json"
+      ],
+      "security-architect": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json"
+      ]
+    },
+    "plan": {
+      "tech-lead": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/product/STORY_MAP.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ]
+    }
+  },
+  "attempt_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-123258-713d5d/product-manager/attempts/20260121T123310Z-b257-prd"
+}

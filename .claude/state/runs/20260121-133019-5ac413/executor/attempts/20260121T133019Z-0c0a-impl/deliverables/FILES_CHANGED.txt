@@ -1,0 +1,42 @@
+# Files Changed for F001: User Authentication
+
+## Backend (added)
+projects/punch-analytics/backend/api/__init__.py
+projects/punch-analytics/backend/api/main.py
+projects/punch-analytics/backend/api/config.py
+projects/punch-analytics/backend/api/routers/__init__.py
+projects/punch-analytics/backend/api/routers/auth.py
+projects/punch-analytics/backend/api/services/__init__.py
+projects/punch-analytics/backend/api/services/oauth_service.py
+projects/punch-analytics/backend/api/schemas/__init__.py
+projects/punch-analytics/backend/api/schemas/auth.py
+projects/punch-analytics/backend/api/models/__init__.py
+projects/punch-analytics/backend/api/models/user.py
+projects/punch-analytics/backend/tests/__init__.py
+projects/punch-analytics/backend/tests/conftest.py
+projects/punch-analytics/backend/tests/test_auth.py
+projects/punch-analytics/backend/pyproject.toml
+projects/punch-analytics/backend/requirements.txt
+projects/punch-analytics/backend/Dockerfile
+
+## Frontend (added)
+projects/punch-analytics/frontend/src/lib/auth/api.ts
+projects/punch-analytics/frontend/src/lib/auth/context.tsx
+projects/punch-analytics/frontend/src/lib/auth/hooks.ts
+projects/punch-analytics/frontend/src/lib/auth/index.ts
+projects/punch-analytics/frontend/src/components/auth/LoginButton.tsx
+projects/punch-analytics/frontend/src/components/auth/LogoutButton.tsx
+projects/punch-analytics/frontend/src/components/auth/AuthGuard.tsx
+projects/punch-analytics/frontend/src/components/auth/index.ts
+projects/punch-analytics/frontend/src/middleware.ts
+projects/punch-analytics/frontend/src/app/layout.tsx
+projects/punch-analytics/frontend/src/app/theme.ts
+projects/punch-analytics/frontend/src/app/page.tsx
+projects/punch-analytics/frontend/src/app/(auth)/login/page.tsx
+projects/punch-analytics/frontend/src/app/(protected)/dashboard/page.tsx
+projects/punch-analytics/frontend/package.json
+projects/punch-analytics/frontend/tsconfig.json
+projects/punch-analytics/frontend/Dockerfile
+
+## Infrastructure (added)
+projects/punch-analytics/docker-compose.yml

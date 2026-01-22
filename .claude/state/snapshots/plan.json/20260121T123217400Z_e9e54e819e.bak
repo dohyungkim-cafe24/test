@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "generated_from": {
+    "source": "template",
+    "note": "Placeholder template. In real runs, plan.json is generated deterministically from plan.md or plan.patch.json."
+  },
+  "inputs": [
+    "docs/product/REQUIREMENTS_BASELINE.md",
+    "docs/product/MARKET_BENCHMARK.md",
+    "docs/product/STORY_MAP.md",
+    "docs/ux/UX_CONTRACT.md",
+    "docs/ux/DESIGN_SYSTEM.md",
+    "features.json",
+    "specs/bdd/TRACEABILITY.json",
+    "specs/bdd/BDD_INDEX.json",
+    "docs/engineering/ARCHITECTURE.md",
+    "docs/engineering/API.md",
+    "docs/engineering/DATA_MODEL.md"
+  ],
+  "sections": {
+    "scope": "PLACEHOLDER\n",
+    "milestones": "PLACEHOLDER\n",
+    "critical_path": "PLACEHOLDER\n",
+    "risks": "PLACEHOLDER\n",
+    "test_strategy": "PLACEHOLDER\n",
+    "definition_of_done": "PLACEHOLDER\n"
+  }
+}

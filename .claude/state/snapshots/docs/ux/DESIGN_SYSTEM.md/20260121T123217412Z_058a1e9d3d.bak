@@ -1,0 +1,46 @@
+# Design System — TEMPLATE
+
+> Owner: ux-designer
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+>
+> Tip: if a component/token decision is feature-specific, annotate the heading or paragraph with `@F###` for feature-scoped extraction.
+
+## Inputs
+
+- docs/ux/UX_CONTRACT.md
+- docs/ux/UX_SPEC.md (when available)
+
+---
+
+## Material
+
+State the baseline (e.g., Material Design 3 / M3) and any deviations.
+
+PLACEHOLDER
+
+## Design tokens
+
+Define tokens (colors, typography, spacing, radii, elevation) in a consistent schema.
+
+PLACEHOLDER
+
+## Theme
+
+PLACEHOLDER
+
+## Color roles
+
+Define semantic roles (primary, secondary, error, background, surface, on-*) and mapping rules.
+
+PLACEHOLDER
+
+## Typography
+
+PLACEHOLDER
+
+## Components
+
+PLACEHOLDER

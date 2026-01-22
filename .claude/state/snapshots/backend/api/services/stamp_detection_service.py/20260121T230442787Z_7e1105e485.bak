@@ -1,0 +1,480 @@
+"""Stamp detection service for identifying strikes and defensive actions.
+
+@feature F006 - Stamp Generation
+
+Implements:
+- AC-030: Strikes detected by arm velocity and trajectory patterns
+- AC-031: Defensive actions detected by torso and arm positioning
+
+This service analyzes pose data frames to detect boxing actions using
+velocity thresholds, trajectory patterns, and body positioning.
+"""
+import logging
+import math
+from typing import Any
+
+logger = logging.getLogger(__name__)
+
+# MediaPipe landmark indices
+LANDMARKS = {
+    "nose": 0,
+    "left_shoulder": 11,
+    "right_shoulder": 12,
+    "left_elbow": 13,
+    "right_elbow": 14,
+    "left_wrist": 15,
+    "right_wrist": 16,
+    "left_hip": 23,
+    "right_hip": 24,
+}
+
+# Detection thresholds
+VELOCITY_THRESHOLD_STRIKE = 0.15  # Minimum velocity for strike detection
+VELOCITY_THRESHOLD_JAB = 0.12  # Lower threshold for quick jabs
+CONFIDENCE_THRESHOLD = 0.7  # Minimum pose confidence for detection
+GUARD_HEIGHT_THRESHOLD = 0.4  # Y position threshold for guard up
+DUCK_HEIGHT_THRESHOLD = 0.55  # Y position threshold for duck
+SLIP_LATERAL_THRESHOLD = 0.08  # Lateral movement threshold for slip
+MIN_ACTION_FRAMES = 3  # Minimum frames for action duration
+
+
+class StampDetectionService:
+    """Service for detecting strikes and defensive actions from pose data.
+
+    AC-030: Strikes detected by arm velocity and trajectory patterns
+    AC-031: Defensive actions detected by torso and arm positioning
+
+    Uses kinematic analysis of joint positions across frames to identify
+    boxing techniques.
+    """
+
+    def __init__(self):
+        """Initialize detection service."""
+        self.min_action_frames = MIN_ACTION_FRAMES
+
+    def detect_strikes(self, pose_data: dict[str, Any]) -> list[dict[str, Any]]:
+        """Detect strike actions from pose data.
+
+        AC-030: Strikes detected by arm velocity and trajectory patterns
+
+        Analyzes arm velocity and trajectory to classify:
+        - Jab: Quick, straight extension with lead hand
+        - Straight: Powerful straight punch with rear hand
+        - Hook: Circular trajectory targeting sides
+        - Uppercut: Upward trajectory targeting chin
+
+        Args:
+            pose_data: Pose data with frames and fps
+
+        Returns:
+            List of detected strike stamps
+        """
+        frames = pose_data.get("frames", [])
+        fps = pose_data.get("fps", 30.0)
+        strikes = []
+
+        if len(frames) < self.min_action_frames:
+            return strikes
+
+        # Calculate velocities for each frame
+        for i in range(2, len(frames)):
+            prev_frame = frames[i - 2]
+            curr_frame = frames[i]
+
+            # Skip low confidence frames
+            if curr_frame.get("confidence", 0) < CONFIDENCE_THRESHOLD:
+                continue
+
+            # Check left arm strikes
+            left_strike = self._detect_arm_strike(
+                prev_frame, curr_frame, fps, "left"
+            )
+            if left_strike:
+                strikes.append(left_strike)
+
+            # Check right arm strikes
+            right_strike = self._detect_arm_strike(
+                prev_frame, curr_frame, fps, "right"
+            )
+            if right_strike:
+                strikes.append(right_strike)
+
+        # Merge nearby detections of same type
+        strikes = self._merge_nearby_stamps(strikes, fps)
+
+        return strikes
+
+    def detect_defense(self, pose_data: dict[str, Any]) -> list[dict[str, Any]]:
+        """Detect defensive actions from pose data.
+
+        AC-031: Defensive actions detected by torso and arm positioning
+
+        Analyzes body positioning to classify:
+        - Guard up: Hands raised protecting head
+        - Guard down: Hands lowered (vulnerable)
+        - Slip: Lateral torso movement
+        - Duck: Lowering head/torso
+        - Bob and weave: Combined movement
+
+        Args:
+            pose_data: Pose data with frames and fps
+
+        Returns:
+            List of detected defense stamps
+        """
+        frames = pose_data.get("frames", [])
+        fps = pose_data.get("fps", 30.0)
+        defense = []
+
+        if len(frames) < self.min_action_frames:
+            return defense
+
+        # State tracking for defense actions
+        guard_up_start = None
+        slip_start = None
+        duck_start = None
+        prev_positions = None
+
+        for i, frame in enumerate(frames):
+            if frame.get("confidence", 0) < CONFIDENCE_THRESHOLD:
+                continue
+
+            joints = {j["joint_id"]: j for j in frame.get("joints", [])}
+            curr_positions = self._extract_positions(joints)
+
+            # Detect guard up
+            if self._is_guard_up(curr_positions):
+                if guard_up_start is None:
+                    guard_up_start = i
+            else:
+                if guard_up_start is not None:
+                    duration = i - guard_up_start
+                    if duration >= self.min_action_frames:
+                        defense.append(
+                            self._create_defense_stamp(
+                                frames[guard_up_start],
+                                "guard_up",
+                                "both",
+                                min(0.95, 0.7 + duration * 0.02),
+                                fps,
+                            )
+                        )
+                    guard_up_start = None
+
+            # Detect slip (lateral movement)
+            if prev_positions is not None:
+                if self._is_slip(prev_positions, curr_positions):
+                    if slip_start is None:
+                        slip_start = i
+                else:
+                    if slip_start is not None:
+                        duration = i - slip_start
+                        if duration >= self.min_action_frames:
+                            side = self._get_slip_side(
+                                prev_positions, curr_positions
+                            )
+                            defense.append(
+                                self._create_defense_stamp(
+                                    frames[slip_start],
+                                    "slip",
+                                    side,
+                                    min(0.9, 0.65 + duration * 0.02),
+                                    fps,
+                                )
+                            )
+                        slip_start = None
+
+            # Detect duck (lowering)
+            if self._is_duck(curr_positions):
+                if duck_start is None:
+                    duck_start = i
+            else:
+                if duck_start is not None:
+                    duration = i - duck_start
+                    if duration >= self.min_action_frames:
+                        defense.append(
+                            self._create_defense_stamp(
+                                frames[duck_start],
+                                "duck",
+                                "both",
+                                min(0.9, 0.65 + duration * 0.02),
+                                fps,
+                            )
+                        )
+                    duck_start = None
+
+            prev_positions = curr_positions
+
+        # Handle actions that extend to end of video
+        if guard_up_start is not None:
+            duration = len(frames) - guard_up_start
+            if duration >= self.min_action_frames:
+                defense.append(
+                    self._create_defense_stamp(
+                        frames[guard_up_start],
+                        "guard_up",
+                        "both",
+                        min(0.95, 0.7 + duration * 0.02),
+                        fps,
+                    )
+                )
+
+        return defense
+
+    def _detect_arm_strike(
+        self,
+        prev_frame: dict,
+        curr_frame: dict,
+        fps: float,
+        side: str,
+    ) -> dict[str, Any] | None:
+        """Detect a strike from arm movement between frames.
+
+        AC-030: Strikes detected by arm velocity and trajectory patterns
+        """
+        prev_joints = {j["joint_id"]: j for j in prev_frame.get("joints", [])}
+        curr_joints = {j["joint_id"]: j for j in curr_frame.get("joints", [])}
+
+        # Get wrist and elbow landmarks
+        wrist_idx = LANDMARKS["left_wrist"] if side == "left" else LANDMARKS["right_wrist"]
+        elbow_idx = LANDMARKS["left_elbow"] if side == "left" else LANDMARKS["right_elbow"]
+        shoulder_idx = (
+            LANDMARKS["left_shoulder"] if side == "left" else LANDMARKS["right_shoulder"]
+        )
+
+        if wrist_idx not in curr_joints or wrist_idx not in prev_joints:
+            return None
+        if elbow_idx not in curr_joints or elbow_idx not in prev_joints:
+            return None
+
+        prev_wrist = prev_joints[wrist_idx]
+        curr_wrist = curr_joints[wrist_idx]
+        curr_elbow = curr_joints[elbow_idx]
+
+        # Calculate wrist velocity
+        time_delta = 2.0 / fps  # 2 frames time
+        dx = curr_wrist["x"] - prev_wrist["x"]
+        dy = curr_wrist["y"] - prev_wrist["y"]
+        dz = curr_wrist.get("z", 0) - prev_wrist.get("z", 0)
+
+        velocity = math.sqrt(dx * dx + dy * dy + dz * dz) / time_delta
+        velocity_vector = {"x": dx / time_delta, "y": dy / time_delta, "z": dz / time_delta}
+
+        # Check if velocity exceeds threshold
+        if velocity < VELOCITY_THRESHOLD_JAB:
+            return None
+
+        # Classify strike type based on trajectory
+        strike_type = self._classify_strike(
+            dx, dy, dz, curr_wrist, curr_elbow, side
+        )
+
+        if strike_type is None:
+            return None
+
+        # Calculate confidence based on velocity and arm extension
+        confidence = min(0.95, 0.5 + velocity * 2.0)
+
+        return {
+            "frame_number": curr_frame["frame_number"],
+            "timestamp_seconds": curr_frame["timestamp_seconds"],
+            "action_type": strike_type,
+            "side": side,
+            "confidence": round(confidence, 2),
+            "velocity_vector": {
+                k: round(v, 4) for k, v in velocity_vector.items()
+            },
+        }
+
+    def _classify_strike(
+        self,
+        dx: float,
+        dy: float,
+        dz: float,
+        wrist: dict,
+        elbow: dict,
+        side: str,
+    ) -> str | None:
+        """Classify strike type based on trajectory and position.
+
+        AC-030: Strikes detected by arm velocity and trajectory patterns
+        """
+        # Determine primary movement direction
+        abs_dx = abs(dx)
+        abs_dy = abs(dy)
+        abs_dz = abs(dz)
+
+        # Forward movement (z is negative forward in MediaPipe)
+        is_forward = dz < -0.05
+
+        # Upward movement (y increases downward in image coords)
+        is_upward = dy < -0.05
+
+        # Lateral movement
+        is_lateral = abs_dx > 0.1
+
+        # Arm extension check (wrist further from body than elbow)
+        is_extended = abs(wrist.get("z", 0)) > abs(elbow.get("z", 0))
+
+        # Classify based on patterns
+        if is_upward and abs_dy > abs_dx and abs_dy > abs_dz:
+            return "uppercut"
+        elif is_lateral and abs_dx > abs_dz * 0.8:
+            return "hook"
+        elif is_forward or is_extended:
+            # Distinguish jab vs straight based on velocity magnitude
+            total_velocity = math.sqrt(dx * dx + dy * dy + dz * dz)
+            if total_velocity < VELOCITY_THRESHOLD_STRIKE:
+                return "jab"
+            else:
+                return "straight"
+
+        return "jab"  # Default to jab for forward punches
+
+    def _extract_positions(self, joints: dict) -> dict[str, dict]:
+        """Extract key body positions from joints."""
+        positions = {}
+
+        for name, idx in LANDMARKS.items():
+            if idx in joints:
+                positions[name] = {
+                    "x": joints[idx]["x"],
+                    "y": joints[idx]["y"],
+                    "z": joints[idx].get("z", 0),
+                }
+
+        return positions
+
+    def _is_guard_up(self, positions: dict) -> bool:
+        """Check if guard is up (hands near face level).
+
+        AC-031: Defensive actions detected by torso and arm positioning
+        """
+        left_wrist = positions.get("left_wrist")
+        right_wrist = positions.get("right_wrist")
+        nose = positions.get("nose")
+
+        if not all([left_wrist, right_wrist, nose]):
+            return False
+
+        # Guard up if both wrists are above shoulder level (lower y value)
+        # and near face horizontally
+        left_up = left_wrist["y"] < GUARD_HEIGHT_THRESHOLD
+        right_up = right_wrist["y"] < GUARD_HEIGHT_THRESHOLD
+
+        return left_up and right_up
+
+    def _is_slip(self, prev_pos: dict, curr_pos: dict) -> bool:
+        """Check for slip (lateral torso movement).
+
+        AC-031: Defensive actions detected by torso and arm positioning
+        """
+        prev_shoulders = (
+            prev_pos.get("left_shoulder"),
+            prev_pos.get("right_shoulder"),
+        )
+        curr_shoulders = (
+            curr_pos.get("left_shoulder"),
+            curr_pos.get("right_shoulder"),
+        )
+
+        if not all(prev_shoulders) or not all(curr_shoulders):
+            return False
+
+        # Calculate shoulder center movement
+        prev_center_x = (prev_shoulders[0]["x"] + prev_shoulders[1]["x"]) / 2
+        curr_center_x = (curr_shoulders[0]["x"] + curr_shoulders[1]["x"]) / 2
+
+        lateral_movement = abs(curr_center_x - prev_center_x)
+
+        return lateral_movement > SLIP_LATERAL_THRESHOLD
+
+    def _get_slip_side(self, prev_pos: dict, curr_pos: dict) -> str:
+        """Determine which side the slip is moving towards."""
+        prev_shoulders = (
+            prev_pos.get("left_shoulder"),
+            prev_pos.get("right_shoulder"),
+        )
+        curr_shoulders = (
+            curr_pos.get("left_shoulder"),
+            curr_pos.get("right_shoulder"),
+        )
+
+        if not all(prev_shoulders) or not all(curr_shoulders):
+            return "both"
+
+        prev_center_x = (prev_shoulders[0]["x"] + prev_shoulders[1]["x"]) / 2
+        curr_center_x = (curr_shoulders[0]["x"] + curr_shoulders[1]["x"]) / 2
+
+        if curr_center_x < prev_center_x:
+            return "left"
+        else:
+            return "right"
+
+    def _is_duck(self, positions: dict) -> bool:
+        """Check for duck (lowered head/torso).
+
+        AC-031: Defensive actions detected by torso and arm positioning
+        """
+        nose = positions.get("nose")
+
+        if not nose:
+            return False
+
+        # Duck if nose is below threshold (higher y value = lower position)
+        return nose["y"] > DUCK_HEIGHT_THRESHOLD
+
+    def _create_defense_stamp(
+        self,
+        frame: dict,
+        action_type: str,
+        side: str,
+        confidence: float,
+        fps: float,
+    ) -> dict[str, Any]:
+        """Create a defense stamp dict."""
+        return {
+            "frame_number": frame["frame_number"],
+            "timestamp_seconds": frame["timestamp_seconds"],
+            "action_type": action_type,
+            "side": side,
+            "confidence": round(confidence, 2),
+        }
+
+    def _merge_nearby_stamps(
+        self,
+        stamps: list[dict],
+        fps: float,
+        time_threshold: float = 0.3,
+    ) -> list[dict]:
+        """Merge stamps that are close together in time.
+
+        Prevents multiple detections for the same action.
+        """
+        if not stamps:
+            return stamps
+
+        # Sort by timestamp
+        stamps.sort(key=lambda s: s["timestamp_seconds"])
+
+        merged = [stamps[0]]
+        for stamp in stamps[1:]:
+            last = merged[-1]
+
+            # Same action type and within time threshold
+            if (
+                stamp["action_type"] == last["action_type"]
+                and stamp["side"] == last["side"]
+                and stamp["timestamp_seconds"] - last["timestamp_seconds"] < time_threshold
+            ):
+                # Keep the higher confidence one
+                if stamp["confidence"] > last["confidence"]:
+                    merged[-1] = stamp
+            else:
+                merged.append(stamp)
+
+        return merged
+
+
+# Singleton instance
+stamp_detection_service = StampDetectionService()

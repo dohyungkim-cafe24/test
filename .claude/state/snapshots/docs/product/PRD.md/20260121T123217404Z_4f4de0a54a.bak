@@ -1,0 +1,48 @@
+# PRD — TEMPLATE
+
+> Owner: product-manager
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/DOC_CONTRACT.md
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/MARKET_BENCHMARK.md
+- docs/product/STORY_MAP.md (Launch scope)
+
+---
+
+## Problem
+
+PLACEHOLDER
+
+## Goals
+
+PLACEHOLDER
+
+## Non-goals
+
+PLACEHOLDER
+
+## Success
+
+PLACEHOLDER
+
+## Success metrics
+
+PLACEHOLDER
+
+## Scope
+
+PLACEHOLDER
+
+## Risks
+
+PLACEHOLDER
+
+## Open questions
+
+PLACEHOLDER

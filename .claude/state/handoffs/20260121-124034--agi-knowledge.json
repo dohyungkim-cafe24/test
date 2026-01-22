@@ -1,0 +1,20 @@
+{
+  "artifacts": [
+    {
+      "kind": "glob",
+      "matches": [
+        "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/knowledge/generated/pipeline-discover/LATEST.md"
+      ],
+      "pattern": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/knowledge/generated/**/LATEST.md",
+      "spec": ".claude/knowledge/generated/**/LATEST.md"
+    }
+  ],
+  "attempt_dir": null,
+  "command": "agi-knowledge",
+  "created_at": "2026-01-21T12:40:34.700115+00:00",
+  "note": null,
+  "project_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics",
+  "run_dir": null,
+  "run_id": null,
+  "schema_version": 1
+}

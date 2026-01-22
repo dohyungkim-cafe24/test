@@ -1,0 +1,116 @@
+"""Subject selection database models.
+
+@feature F003 - Subject Selection
+
+Maps to thumbnails and subjects tables as defined in DATA_MODEL.md.
+"""
+from datetime import datetime
+from typing import Any, Optional
+from uuid import UUID, uuid4
+
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+from sqlalchemy.types import JSON
+
+from api.models.user import Base
+
+
+class Thumbnail(Base):
+    """Thumbnail model for extracted video frames.
+
+    AC-013: Thumbnail grid displays extracted frames
+    Stores extracted video thumbnails for subject selection.
+    """
+
+    __tablename__ = "thumbnails"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    video_id: Mapped[UUID] = mapped_column(
+        ForeignKey("videos.id", ondelete="CASCADE"), nullable=False
+    )
+
+    frame_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    timestamp_seconds: Mapped[float] = mapped_column(Real, nullable=False)
+    storage_key: Mapped[str] = mapped_column(String(512), nullable=False)
+
+    # Person detection results - array of {person_id, bounding_box, confidence}
+    # Using JSON for SQLite compatibility in tests, JSONB in PostgreSQL
+    detected_persons: Mapped[Optional[list[dict[str, Any]]]] = mapped_column(
+        JSON, nullable=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        Index("idx_thumbnails_video", "video_id", "timestamp_seconds"),
+        # Unique constraint on video_id + frame_number
+        Index("idx_thumbnails_video_frame", "video_id", "frame_number", unique=True),
+    )
+
+    def to_dict(self) -> dict:
+        """Convert model to dictionary for API response."""
+        return {
+            "thumbnail_id": str(self.id),
+            "video_id": str(self.video_id),
+            "frame_number": self.frame_number,
+            "timestamp_seconds": self.timestamp_seconds,
+            "storage_key": self.storage_key,
+            "detected_persons": self.detected_persons or [],
+        }
+
+
+class Subject(Base):
+    """Subject model for selected analysis target.
+
+    AC-015: Confirm selection stores bounding box for tracking
+    AC-016: Selection can be changed before confirmation
+
+    Stores the selected person (subject) for analysis.
+    One subject per video (UNIQUE constraint).
+    """
+
+    __tablename__ = "subjects"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    video_id: Mapped[UUID] = mapped_column(
+        ForeignKey("videos.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+
+    # Selection from thumbnail
+    thumbnail_id: Mapped[UUID] = mapped_column(
+        ForeignKey("thumbnails.id"), nullable=False
+    )
+    person_id: Mapped[str] = mapped_column(
+        String(20), nullable=False
+    )  # References detected_persons array
+
+    # Initial bounding box for tracking - {x, y, width, height}
+    initial_bbox: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+    # Tracking quality (updated after pose estimation)
+    tracking_confidence: Mapped[Optional[float]] = mapped_column(Real, nullable=True)
+    frames_tracked: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    frames_lost: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (Index("idx_subjects_video", "video_id"),)
+
+    def to_dict(self) -> dict:
+        """Convert model to dictionary for API response."""
+        return {
+            "subject_id": str(self.id),
+            "video_id": str(self.video_id),
+            "thumbnail_id": str(self.thumbnail_id),
+            "person_id": self.person_id,
+            "bounding_box": self.initial_bbox,
+            "tracking_confidence": self.tracking_confidence,
+            "frames_tracked": self.frames_tracked,
+            "frames_lost": self.frames_lost,
+        }

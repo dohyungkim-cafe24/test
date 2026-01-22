@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-01-21T22:55:20Z",
+  "inputs": {
+    "console_jsonl": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/evidence/browser/console.jsonl",
+    "network_jsonl": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-225048-b20489/tester/attempts/20260121T225048Z-149f-test/evidence/browser/network.jsonl",
+    "allow_console_regex": [],
+    "allow_network_regex": [],
+    "fail_on_warn": false
+  },
+  "summary": {
+    "console": {
+      "total": 1,
+      "errors": 0,
+      "warnings": 0
+    },
+    "network": {
+      "total": 1,
+      "failures": 0,
+      "warnings": 0
+    },
+    "findings": {
+      "fail": 0,
+      "warn": 0
+    }
+  },
+  "verdict": "PASS",
+  "findings": []
+}

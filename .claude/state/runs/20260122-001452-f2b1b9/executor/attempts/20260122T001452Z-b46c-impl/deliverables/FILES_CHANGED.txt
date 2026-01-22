@@ -1,0 +1,22 @@
+# Files Changed for F010 - Report History Dashboard
+
+## Backend - New Files
+backend/api/services/dashboard_service.py [ADDED]
+backend/api/schemas/dashboard.py [ADDED]
+backend/api/routers/dashboard.py [ADDED]
+backend/tests/test_dashboard.py [ADDED]
+
+## Backend - Modified Files
+backend/api/main.py [MODIFIED] - Added dashboard router registration
+
+## Frontend - New Files
+frontend/src/lib/dashboard/api.ts [ADDED]
+frontend/src/lib/dashboard/index.ts [ADDED]
+frontend/src/components/dashboard/ReportCard.tsx [ADDED]
+frontend/src/components/dashboard/DeleteConfirmDialog.tsx [ADDED]
+frontend/src/components/dashboard/EmptyState.tsx [ADDED]
+frontend/src/components/dashboard/ReportCardSkeleton.tsx [ADDED]
+frontend/src/components/dashboard/index.ts [ADDED]
+
+## Frontend - Modified Files
+frontend/src/app/(protected)/dashboard/page.tsx [MODIFIED] - Full F010 implementation

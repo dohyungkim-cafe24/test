@@ -1,0 +1,251 @@
+'use client';
+
+/**
+ * Video upload page
+ * @file page.tsx
+ * @feature F002 - Video Upload
+ *
+ * Implements:
+ * - AC-006: Valid video file upload with progress indicator
+ * - AC-007: Upload complete navigates to subject selection
+ * - AC-008: File over 500MB shows size error
+ * - AC-009: Duration outside 1-3 min shows duration error
+ * - AC-010: Unsupported format shows format error
+ * - AC-011: Network interruption resumes automatically
+ * - AC-012: Cancel discards partial upload
+ */
+
+import { useCallback, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  Container,
+  Snackbar,
+  Typography,
+} from '@mui/material';
+import { useAuth } from '@/lib/auth/hooks';
+import { UploadDropzone, UploadProgress } from '@/components/upload';
+import {
+  cancelUpload,
+  UploadCompleteResponse,
+  uploadVideo,
+} from '@/lib/upload';
+
+/** Upload state machine states */
+type UploadStatus = 'idle' | 'uploading' | 'complete' | 'error';
+
+/** Progress state */
+interface ProgressState {
+  percent: number;
+  bytesUploaded: number;
+  totalBytes: number;
+  chunksUploaded: number;
+  totalChunks: number;
+  estimatedTimeRemaining?: number;
+}
+
+export default function UploadPage() {
+  const router = useRouter();
+  const { accessToken, isLoading: isAuthLoading, isAuthenticated } = useAuth();
+
+  const [status, setStatus] = useState<UploadStatus>('idle');
+  const [progress, setProgress] = useState<ProgressState>({
+    percent: 0,
+    bytesUploaded: 0,
+    totalBytes: 0,
+    chunksUploaded: 0,
+    totalChunks: 0,
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showError, setShowError] = useState(false);
+  const [isConnectionLost, setIsConnectionLost] = useState(false);
+
+  // Abort controller for cancellation
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const uploadIdRef = useRef<string | null>(null);
+
+  const handleFileSelect = useCallback(
+    async (file: File, durationSeconds: number) => {
+      if (!accessToken) {
+        setErrorMessage('Please log in to upload videos');
+        setShowError(true);
+        return;
+      }
+
+      setSelectedFile(file);
+      setStatus('uploading');
+      setErrorMessage(null);
+      setProgress({
+        percent: 0,
+        bytesUploaded: 0,
+        totalBytes: file.size,
+        chunksUploaded: 0,
+        totalChunks: Math.ceil(file.size / (5 * 1024 * 1024)),
+      });
+
+      // Create abort controller
+      abortControllerRef.current = new AbortController();
+
+      // Network status monitoring for AC-011
+      const handleOnline = () => setIsConnectionLost(false);
+      const handleOffline = () => setIsConnectionLost(true);
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      try {
+        const result: UploadCompleteResponse = await uploadVideo(
+          accessToken,
+          file,
+          durationSeconds,
+          (progressUpdate) => {
+            setProgress(progressUpdate);
+          },
+          abortControllerRef.current.signal
+        );
+
+        setStatus('complete');
+
+        // AC-007: Navigate to subject selection after successful upload
+        router.push(`/subject-selection?video_id=${result.video_id}`);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message === 'Upload cancelled') {
+            // User cancelled, reset to idle
+            setStatus('idle');
+            setSelectedFile(null);
+          } else {
+            setStatus('error');
+            setErrorMessage(error.message);
+            setShowError(true);
+          }
+        } else {
+          setStatus('error');
+          setErrorMessage('An unexpected error occurred');
+          setShowError(true);
+        }
+      } finally {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+        abortControllerRef.current = null;
+      }
+    },
+    [accessToken, router]
+  );
+
+  const handleValidationError = useCallback((error: string) => {
+    setErrorMessage(error);
+    setShowError(true);
+  }, []);
+
+  const handleCancel = useCallback(async () => {
+    // Trigger abort
+    abortControllerRef.current?.abort();
+
+    // Reset state
+    setStatus('idle');
+    setSelectedFile(null);
+    setProgress({
+      percent: 0,
+      bytesUploaded: 0,
+      totalBytes: 0,
+      chunksUploaded: 0,
+      totalChunks: 0,
+    });
+  }, []);
+
+  const handleErrorClose = useCallback(() => {
+    setShowError(false);
+  }, []);
+
+  // Auth loading state
+  if (isAuthLoading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '60vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Not authenticated - redirect will happen via middleware
+  if (!isAuthenticated) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '60vh',
+        }}
+      >
+        <Typography>Redirecting to login...</Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Container maxWidth="sm" sx={{ py: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom textAlign="center">
+        Upload Your Sparring Video
+      </Typography>
+
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        textAlign="center"
+        sx={{ mb: 4 }}
+      >
+        Upload a video of your sparring session to receive AI-powered analysis
+        and feedback.
+      </Typography>
+
+      <Box sx={{ mt: 4 }}>
+        {status === 'idle' || status === 'error' ? (
+          <UploadDropzone
+            onFileSelect={handleFileSelect}
+            onValidationError={handleValidationError}
+            disabled={false}
+          />
+        ) : status === 'uploading' ? (
+          <UploadProgress
+            percent={progress.percent}
+            bytesUploaded={progress.bytesUploaded}
+            totalBytes={progress.totalBytes}
+            chunksUploaded={progress.chunksUploaded}
+            totalChunks={progress.totalChunks}
+            estimatedTimeRemaining={progress.estimatedTimeRemaining}
+            isConnectionLost={isConnectionLost}
+            filename={selectedFile?.name}
+            onCancel={handleCancel}
+          />
+        ) : null}
+      </Box>
+
+      {/* Error snackbar */}
+      <Snackbar
+        open={showError}
+        autoHideDuration={6000}
+        onClose={handleErrorClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleErrorClose}
+          severity="error"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
+}

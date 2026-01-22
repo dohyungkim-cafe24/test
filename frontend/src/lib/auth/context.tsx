@@ -1,0 +1,235 @@
+'use client';
+
+/**
+ * Authentication context provider
+ * @file context.tsx
+ * @feature F001 - User Authentication
+ */
+
+import React, { createContext, useCallback, useEffect, useState } from 'react';
+import {
+  getCurrentUser,
+  logout as logoutApi,
+  refreshToken,
+  UserProfile,
+} from './api';
+
+/**
+ * Authentication state
+ */
+export interface AuthState {
+  /** Current user profile, null if not authenticated */
+  user: UserProfile | null;
+  /** Whether authentication is being checked */
+  isLoading: boolean;
+  /** Whether user is authenticated */
+  isAuthenticated: boolean;
+  /** Current access token */
+  accessToken: string | null;
+}
+
+/**
+ * Authentication context value
+ */
+export interface AuthContextValue extends AuthState {
+  /** Set access token after OAuth callback */
+  setAccessToken: (token: string) => void;
+  /** Logout and clear session */
+  logout: () => Promise<void>;
+  /** Refresh token and update state */
+  refresh: () => Promise<boolean>;
+}
+
+/**
+ * Default context value
+ */
+const defaultContextValue: AuthContextValue = {
+  user: null,
+  isLoading: true,
+  isAuthenticated: false,
+  accessToken: null,
+  setAccessToken: () => {},
+  logout: async () => {},
+  refresh: async () => false,
+};
+
+/**
+ * Authentication context
+ */
+export const AuthContext = createContext<AuthContextValue>(defaultContextValue);
+
+/**
+ * Token storage keys
+ */
+const TOKEN_STORAGE_KEY = 'punch_access_token';
+
+/**
+ * Get stored access token
+ */
+function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(TOKEN_STORAGE_KEY);
+}
+
+/**
+ * Store access token
+ */
+function storeToken(token: string | null): void {
+  if (typeof window === 'undefined') return;
+  if (token) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+  }
+}
+
+/**
+ * Authentication provider props
+ */
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
+
+/**
+ * Authentication provider component
+ * Manages authentication state and provides auth methods to children
+ */
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * Set access token and store it
+   */
+  const setAccessToken = useCallback((token: string) => {
+    setAccessTokenState(token);
+    storeToken(token);
+  }, []);
+
+  /**
+   * Clear authentication state
+   */
+  const clearAuth = useCallback(() => {
+    setUser(null);
+    setAccessTokenState(null);
+    storeToken(null);
+  }, []);
+
+  /**
+   * Refresh token and update user
+   */
+  const refresh = useCallback(async (): Promise<boolean> => {
+    try {
+      const tokenResponse = await refreshToken();
+      if (!tokenResponse) {
+        clearAuth();
+        return false;
+      }
+
+      setAccessToken(tokenResponse.access_token);
+
+      // Fetch user profile with new token
+      const userProfile = await getCurrentUser(tokenResponse.access_token);
+      if (userProfile) {
+        setUser(userProfile);
+        return true;
+      }
+
+      clearAuth();
+      return false;
+    } catch (error) {
+      console.error('Refresh failed:', error);
+      clearAuth();
+      return false;
+    }
+  }, [setAccessToken, clearAuth]);
+
+  /**
+   * Logout user
+   */
+  const logout = useCallback(async () => {
+    await logoutApi();
+    clearAuth();
+  }, [clearAuth]);
+
+  /**
+   * Initialize auth state on mount
+   */
+  useEffect(() => {
+    async function initAuth() {
+      setIsLoading(true);
+
+      // Check for token in URL fragment (from OAuth callback)
+      // M1 fix: Token is now in fragment (#) instead of query param (?)
+      // Fragment is not sent to server, not logged, more secure
+      if (typeof window !== 'undefined') {
+        const hash = window.location.hash;
+        let urlToken: string | null = null;
+
+        if (hash) {
+          // Parse fragment as URL params (e.g., #access_token=xxx)
+          const hashParams = new URLSearchParams(hash.substring(1));
+          urlToken = hashParams.get('access_token');
+
+          if (urlToken) {
+            // Remove token from URL fragment
+            window.history.replaceState(
+              {},
+              '',
+              window.location.pathname + window.location.search
+            );
+
+            setAccessToken(urlToken);
+
+            // Fetch user profile
+            const userProfile = await getCurrentUser(urlToken);
+            if (userProfile) {
+              setUser(userProfile);
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
+
+        // Try stored token
+        const storedToken = getStoredToken();
+        if (storedToken) {
+          const userProfile = await getCurrentUser(storedToken);
+          if (userProfile) {
+            setAccessTokenState(storedToken);
+            setUser(userProfile);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Try refresh token
+        const refreshed = await refresh();
+        if (!refreshed) {
+          clearAuth();
+        }
+      }
+
+      setIsLoading(false);
+    }
+
+    initAuth();
+  }, [setAccessToken, refresh, clearAuth]);
+
+  const contextValue: AuthContextValue = {
+    user,
+    isLoading,
+    isAuthenticated: !!user,
+    accessToken,
+    setAccessToken,
+    logout,
+    refresh,
+  };
+
+  return (
+    <AuthContext.Provider value={contextValue}>
+      {children}
+    </AuthContext.Provider>
+  );
+}

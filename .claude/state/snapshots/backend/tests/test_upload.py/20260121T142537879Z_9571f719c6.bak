@@ -1,0 +1,481 @@
+"""Tests for video upload functionality.
+
+@feature F002 - Video Upload
+TDD: RED phase - write failing tests first
+"""
+import math
+from datetime import datetime, timedelta, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import UUID, uuid4
+
+import pytest
+from fastapi import status
+from fastapi.testclient import TestClient
+from pydantic import ValidationError
+
+from api.schemas.upload import (
+    ALLOWED_CONTENT_TYPES,
+    CHUNK_SIZE,
+    MAX_DURATION_SECONDS,
+    MAX_FILE_SIZE,
+    MIN_DURATION_SECONDS,
+    UploadInitiateRequest,
+)
+
+
+class TestUploadSchemas:
+    """Test upload request/response schemas."""
+
+    def test_valid_upload_request(self):
+        """AC-006: Valid video file (MP4/MOV/WebM, <500MB, 1-3 min) uploads."""
+        request = UploadInitiateRequest(
+            filename="sparring_2026_01_20.mp4",
+            file_size=200_000_000,  # 200MB
+            content_type="video/mp4",
+            duration_seconds=120,  # 2 minutes
+        )
+        assert request.filename == "sparring_2026_01_20.mp4"
+        assert request.file_size == 200_000_000
+        assert request.content_type == "video/mp4"
+        assert request.duration_seconds == 120
+
+    def test_valid_mov_format(self):
+        """AC-006: MOV format is accepted."""
+        request = UploadInitiateRequest(
+            filename="video.mov",
+            file_size=100_000_000,
+            content_type="video/quicktime",
+            duration_seconds=90,
+        )
+        assert request.content_type == "video/quicktime"
+
+    def test_valid_webm_format(self):
+        """AC-006: WebM format is accepted."""
+        request = UploadInitiateRequest(
+            filename="video.webm",
+            file_size=100_000_000,
+            content_type="video/webm",
+            duration_seconds=90,
+        )
+        assert request.content_type == "video/webm"
+
+    def test_file_size_too_large(self):
+        """AC-008: File over 500MB shows size error message."""
+        with pytest.raises(ValidationError) as exc_info:
+            UploadInitiateRequest(
+                filename="large_video.mp4",
+                file_size=650_000_000,  # 650MB
+                content_type="video/mp4",
+                duration_seconds=120,
+            )
+        errors = exc_info.value.errors()
+        assert len(errors) == 1
+        assert "500MB" in str(errors[0]["msg"])
+        assert "650MB" in str(errors[0]["msg"])
+
+    def test_file_size_at_limit(self):
+        """AC-006: File at exactly 500MB is accepted."""
+        request = UploadInitiateRequest(
+            filename="max_video.mp4",
+            file_size=MAX_FILE_SIZE,
+            content_type="video/mp4",
+            duration_seconds=120,
+        )
+        assert request.file_size == MAX_FILE_SIZE
+
+    def test_duration_too_short(self):
+        """AC-009: Video duration under 1 minute shows duration error."""
+        with pytest.raises(ValidationError) as exc_info:
+            UploadInitiateRequest(
+                filename="short_video.mp4",
+                file_size=50_000_000,
+                content_type="video/mp4",
+                duration_seconds=30,  # 30 seconds
+            )
+        errors = exc_info.value.errors()
+        assert len(errors) == 1
+        assert "1 and 3 minutes" in str(errors[0]["msg"])
+        assert "30 seconds" in str(errors[0]["msg"])
+
+    def test_duration_too_long(self):
+        """AC-009: Video duration over 3 minutes shows duration error."""
+        with pytest.raises(ValidationError) as exc_info:
+            UploadInitiateRequest(
+                filename="long_video.mp4",
+                file_size=400_000_000,
+                content_type="video/mp4",
+                duration_seconds=300,  # 5 minutes
+            )
+        errors = exc_info.value.errors()
+        assert len(errors) == 1
+        assert "1 and 3 minutes" in str(errors[0]["msg"])
+        assert "5 minutes" in str(errors[0]["msg"])
+
+    def test_duration_at_min_limit(self):
+        """AC-006: Video at exactly 1 minute is accepted."""
+        request = UploadInitiateRequest(
+            filename="min_video.mp4",
+            file_size=100_000_000,
+            content_type="video/mp4",
+            duration_seconds=MIN_DURATION_SECONDS,
+        )
+        assert request.duration_seconds == MIN_DURATION_SECONDS
+
+    def test_duration_at_max_limit(self):
+        """AC-006: Video at exactly 3 minutes is accepted."""
+        request = UploadInitiateRequest(
+            filename="max_video.mp4",
+            file_size=300_000_000,
+            content_type="video/mp4",
+            duration_seconds=MAX_DURATION_SECONDS,
+        )
+        assert request.duration_seconds == MAX_DURATION_SECONDS
+
+    def test_unsupported_format(self):
+        """AC-010: Unsupported format shows format error message."""
+        with pytest.raises(ValidationError) as exc_info:
+            UploadInitiateRequest(
+                filename="video.avi",
+                file_size=100_000_000,
+                content_type="video/x-msvideo",
+                duration_seconds=120,
+            )
+        errors = exc_info.value.errors()
+        assert len(errors) == 1
+        assert "Unsupported format" in str(errors[0]["msg"])
+        assert "MP4, MOV, or WebM" in str(errors[0]["msg"])
+
+
+class TestUploadService:
+    """Test upload service business logic."""
+
+    @pytest.fixture
+    def mock_db_session(self):
+        """Create mock database session."""
+        session = AsyncMock()
+        session.add = MagicMock()
+        session.commit = AsyncMock()
+        session.refresh = AsyncMock()
+        return session
+
+    @pytest.mark.asyncio
+    async def test_initiate_upload_creates_session(self, mock_db_session):
+        """Upload initiation creates a session record."""
+        from api.services.upload_service import UploadService
+
+        service = UploadService()
+        user_id = uuid4()
+
+        result = await service.initiate_upload(
+            session=mock_db_session,
+            user_id=user_id,
+            filename="test.mp4",
+            file_size=200_000_000,
+            content_type="video/mp4",
+            duration_seconds=120,
+        )
+
+        assert result is not None
+        assert "upload_id" in result
+        assert result["chunk_size"] == CHUNK_SIZE
+        assert result["total_chunks"] == math.ceil(200_000_000 / CHUNK_SIZE)
+        assert "expires_at" in result
+        mock_db_session.add.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_upload_chunk_records_progress(self, mock_db_session):
+        """AC-006: Upload shows progress indicator."""
+        from api.services.upload_service import UploadService
+
+        service = UploadService()
+        upload_id = uuid4()
+
+        # Mock existing session
+        mock_session = MagicMock()
+        mock_session.id = upload_id
+        mock_session.status = "active"
+        mock_session.total_chunks = 40
+        mock_session.chunks_received = 5
+        mock_session.bytes_received = 5 * CHUNK_SIZE
+        mock_session.file_size = 200_000_000
+        mock_session.chunk_size = CHUNK_SIZE
+        mock_session.chunks = []
+
+        with patch.object(service, "_get_session", return_value=mock_session):
+            with patch.object(service, "_store_chunk", return_value="chunks/test/5"):
+                result = await service.upload_chunk(
+                    session=mock_db_session,
+                    upload_id=upload_id,
+                    chunk_number=5,
+                    chunk_data=b"x" * CHUNK_SIZE,
+                    content_md5=None,
+                )
+
+        assert result is not None
+        assert result["chunk_number"] == 5
+        assert result["received_bytes"] == CHUNK_SIZE
+        assert "progress_percent" in result
+
+    @pytest.mark.asyncio
+    async def test_duplicate_chunk_returns_409(self, mock_db_session):
+        """Chunk already uploaded returns 409 conflict."""
+        from api.services.upload_service import UploadService, ChunkExistsError
+
+        service = UploadService()
+        upload_id = uuid4()
+
+        # Mock existing session with chunk already uploaded
+        mock_chunk = MagicMock()
+        mock_chunk.chunk_number = 5
+
+        mock_session = MagicMock()
+        mock_session.id = upload_id
+        mock_session.status = "active"
+        mock_session.chunks = [mock_chunk]
+
+        with patch.object(service, "_get_session", return_value=mock_session):
+            with pytest.raises(ChunkExistsError) as exc_info:
+                await service.upload_chunk(
+                    session=mock_db_session,
+                    upload_id=upload_id,
+                    chunk_number=5,
+                    chunk_data=b"x" * CHUNK_SIZE,
+                    content_md5=None,
+                )
+            assert exc_info.value.chunk_number == 5
+
+    @pytest.mark.asyncio
+    async def test_complete_upload_creates_video(self, mock_db_session):
+        """AC-007: Upload complete triggers video creation."""
+        from api.services.upload_service import UploadService
+
+        service = UploadService()
+        upload_id = uuid4()
+
+        # Mock completed session
+        mock_session = MagicMock()
+        mock_session.id = upload_id
+        mock_session.user_id = uuid4()
+        mock_session.status = "active"
+        mock_session.total_chunks = 10
+        mock_session.chunks_received = 10
+        mock_session.file_size = 50_000_000
+        mock_session.filename = "test.mp4"
+        mock_session.content_type = "video/mp4"
+        mock_session.duration_seconds = 120
+        mock_session.chunk_size = CHUNK_SIZE
+
+        with patch.object(service, "_get_session", return_value=mock_session):
+            with patch.object(service, "_assemble_chunks", return_value="videos/user/video.mp4"):
+                result = await service.complete_upload(
+                    session=mock_db_session,
+                    upload_id=upload_id,
+                )
+
+        assert result is not None
+        assert "video_id" in result
+        assert result["status"] == "processing_thumbnails"
+        assert result["duration_seconds"] == 120
+        assert result["file_size"] == 50_000_000
+
+    @pytest.mark.asyncio
+    async def test_cancel_upload_discards_chunks(self, mock_db_session):
+        """AC-012: Cancel upload discards partial upload."""
+        from api.services.upload_service import UploadService
+
+        service = UploadService()
+        upload_id = uuid4()
+
+        mock_session = MagicMock()
+        mock_session.id = upload_id
+        mock_session.status = "active"
+
+        with patch.object(service, "_get_session", return_value=mock_session):
+            with patch.object(service, "_delete_chunks", return_value=None):
+                result = await service.cancel_upload(
+                    session=mock_db_session,
+                    upload_id=upload_id,
+                )
+
+        assert result is not None
+        assert result["message"] == "Upload cancelled"
+        assert result["upload_id"] == str(upload_id)
+        assert mock_session.status == "cancelled"
+
+
+class TestUploadRouter:
+    """Test upload API endpoints."""
+
+    @pytest.fixture
+    def app(self):
+        """Create test app with mocked dependencies."""
+        from fastapi import FastAPI
+        from api.routers.upload import router
+
+        app = FastAPI()
+        app.include_router(router, prefix="/api/v1")
+        return app
+
+    @pytest.fixture
+    def client(self, app):
+        """Create test client."""
+        return TestClient(app)
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Create auth headers with mock token."""
+        return {"Authorization": "Bearer test_token_123"}
+
+    def test_initiate_upload_requires_auth(self, client):
+        """Upload endpoints require authentication."""
+        response = client.post(
+            "/api/v1/upload/initiate",
+            json={
+                "filename": "test.mp4",
+                "file_size": 100_000_000,
+                "content_type": "video/mp4",
+                "duration_seconds": 120,
+            },
+        )
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_initiate_upload_validates_size(self, client, auth_headers):
+        """AC-008: File over 500MB returns validation error."""
+        with patch("api.routers.upload.get_current_user", return_value={"id": str(uuid4())}):
+            response = client.post(
+                "/api/v1/upload/initiate",
+                json={
+                    "filename": "large.mp4",
+                    "file_size": 650_000_000,
+                    "content_type": "video/mp4",
+                    "duration_seconds": 120,
+                },
+                headers=auth_headers,
+            )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "500MB" in response.text
+
+    def test_initiate_upload_validates_duration(self, client, auth_headers):
+        """AC-009: Duration outside 1-3 min returns validation error."""
+        with patch("api.routers.upload.get_current_user", return_value={"id": str(uuid4())}):
+            response = client.post(
+                "/api/v1/upload/initiate",
+                json={
+                    "filename": "short.mp4",
+                    "file_size": 50_000_000,
+                    "content_type": "video/mp4",
+                    "duration_seconds": 30,
+                },
+                headers=auth_headers,
+            )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "1 and 3 minutes" in response.text
+
+    def test_initiate_upload_validates_format(self, client, auth_headers):
+        """AC-010: Unsupported format returns validation error."""
+        with patch("api.routers.upload.get_current_user", return_value={"id": str(uuid4())}):
+            response = client.post(
+                "/api/v1/upload/initiate",
+                json={
+                    "filename": "video.avi",
+                    "file_size": 100_000_000,
+                    "content_type": "video/x-msvideo",
+                    "duration_seconds": 120,
+                },
+                headers=auth_headers,
+            )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "Unsupported format" in response.text
+
+    def test_cancel_upload_success(self, client, auth_headers):
+        """AC-012: Cancel upload returns success."""
+        upload_id = uuid4()
+        with patch("api.routers.upload.get_current_user", return_value={"id": str(uuid4())}):
+            with patch("api.routers.upload.upload_service") as mock_service:
+                mock_service.cancel_upload = AsyncMock(
+                    return_value={"message": "Upload cancelled", "upload_id": str(upload_id)}
+                )
+                response = client.delete(
+                    f"/api/v1/upload/{upload_id}",
+                    headers=auth_headers,
+                )
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["message"] == "Upload cancelled"
+
+
+class TestResumableUpload:
+    """Test resumable upload functionality.
+
+    AC-011: Network interruption resumes upload automatically
+    """
+
+    @pytest.fixture
+    def mock_db_session(self):
+        """Create mock database session."""
+        session = AsyncMock()
+        session.add = MagicMock()
+        session.commit = AsyncMock()
+        session.refresh = AsyncMock()
+        session.execute = AsyncMock()
+        return session
+
+    @pytest.mark.asyncio
+    async def test_get_upload_status_returns_progress(self, mock_db_session):
+        """Client can check upload progress for resumption."""
+        from api.services.upload_service import UploadService
+
+        service = UploadService()
+        upload_id = uuid4()
+
+        mock_session = MagicMock()
+        mock_session.id = upload_id
+        mock_session.status = "active"
+        mock_session.chunks_received = 20
+        mock_session.total_chunks = 40
+        mock_session.expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+        with patch.object(service, "_get_session", return_value=mock_session):
+            result = await service.get_upload_status(
+                session=mock_db_session,
+                upload_id=upload_id,
+            )
+
+        assert result is not None
+        assert result["upload_id"] == str(upload_id)
+        assert result["status"] == "active"
+        assert result["chunks_received"] == 20
+        assert result["total_chunks"] == 40
+        assert result["progress_percent"] == 50
+
+    @pytest.mark.asyncio
+    async def test_get_received_chunks_for_resume(self, mock_db_session):
+        """Client can get list of received chunks to resume."""
+        from api.services.upload_service import UploadService
+
+        service = UploadService()
+        upload_id = uuid4()
+
+        mock_chunk1 = MagicMock()
+        mock_chunk1.chunk_number = 0
+        mock_chunk2 = MagicMock()
+        mock_chunk2.chunk_number = 1
+        mock_chunk3 = MagicMock()
+        mock_chunk3.chunk_number = 3  # Chunk 2 missing - gap for resume
+
+        mock_session = MagicMock()
+        mock_session.id = upload_id
+        mock_session.status = "active"
+        mock_session.chunks = [mock_chunk1, mock_chunk2, mock_chunk3]
+
+        with patch.object(service, "_get_session", return_value=mock_session):
+            result = await service.get_received_chunks(
+                session=mock_db_session,
+                upload_id=upload_id,
+            )
+
+        assert result == [0, 1, 3]  # Chunk 2 missing
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

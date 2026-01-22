@@ -1,0 +1,14 @@
+{
+  "run_id": "20260121-225048-b20489",
+  "scratch_dir": "scratch",
+  "deliverables_dir": "deliverables",
+  "evidence_dir": "evidence",
+  "sealed": false,
+  "created": "2026-01-22 07:50:48",
+  "agent": "tester",
+  "stage": "test",
+  "feature": "F005",
+  "status": "OPEN",
+  "result": null,
+  "note": null
+}

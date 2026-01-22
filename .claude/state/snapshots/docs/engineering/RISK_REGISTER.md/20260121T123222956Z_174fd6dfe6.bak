@@ -1,0 +1,32 @@
+# RISK REGISTER — TEMPLATE
+
+> Owner: architect
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/MARKET_BENCHMARK.md
+- docs/product/STORY_MAP.md (Launch scope)
+- features.json
+- specs/bdd/TRACEABILITY.json
+- docs/engineering/ARCHITECTURE.md
+
+---
+
+## Feature annotations (optional)
+
+If a risk/mitigation is feature-scoped, tag it with the feature id (e.g. `@F###`) so it is discoverable in downstream Feature Packets.
+
+---
+
+## Risks
+
+PLACEHOLDER
+
+## Mitigations
+
+PLACEHOLDER

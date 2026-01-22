@@ -1,0 +1,49 @@
+# DATA MODEL — TEMPLATE
+
+> Owner: architect
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/STORY_MAP.md (Launch scope)
+- features.json
+- specs/bdd/TRACEABILITY.json
+
+---
+
+## Feature annotations (recommended)
+
+To make downstream implementation/testing more reliable, **tag feature-specific design notes** with the feature id.
+
+Example:
+
+- `### @F### New entity: Order`
+- `- @F### Adds unique constraint: ...`
+
+The workspace will auto-generate a **Feature Packet** for executor/tester/reviewer and will extract nearby lines when it sees `@F###`.
+
+---
+
+## Entities
+
+PLACEHOLDER
+
+## Relations
+
+PLACEHOLDER
+
+## Migrations
+
+PLACEHOLDER
+
+## Integrity
+
+PLACEHOLDER
+
+## Examples
+
+PLACEHOLDER

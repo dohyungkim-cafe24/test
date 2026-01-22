@@ -1,0 +1,11 @@
+{
+  "attempt_id": "20260122T032643Z-91e5",
+  "created": "2026-01-22 12:26:43",
+  "agent": "quality-auditor",
+  "label": "release",
+  "run_id": "",
+  "scratch_dir": "scratch",
+  "deliverables_dir": "deliverables",
+  "evidence_dir": "evidence",
+  "sealed": false
+}

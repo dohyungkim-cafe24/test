@@ -1,0 +1,10 @@
+{
+  "active": true,
+  "enabled": true,
+  "mode": "run",
+  "updated_utc": "2026-01-21T12:32:35Z",
+  "source": "autopilot_state.py",
+  "stop_blocks": 0,
+  "max_stop_blocks": 50,
+  "last_enable_note": "create punch-analytics"
+}

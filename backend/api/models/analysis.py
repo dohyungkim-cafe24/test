@@ -1,0 +1,189 @@
+"""Analysis pipeline database models.
+
+@feature F005 - Pose Estimation Processing
+@feature F006 - Stamp Generation
+@feature F007 - LLM Analysis
+
+Maps to analyses table as defined in DATA_MODEL.md.
+"""
+from datetime import datetime
+from enum import Enum
+from typing import Any, Optional
+from uuid import UUID, uuid4
+
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, SmallInteger, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
+from sqlalchemy.types import JSON
+
+from api.models.user import Base
+
+
+class AnalysisStatus(str, Enum):
+    """Analysis pipeline status values.
+
+    Status state machine:
+    queued -> processing -> pose_estimation -> stamp_generation ->
+    llm_analysis -> report_generation -> completed
+    (failed can occur from any state)
+    """
+
+    QUEUED = "queued"
+    PROCESSING = "processing"
+    POSE_ESTIMATION = "pose_estimation"
+    STAMP_GENERATION = "stamp_generation"
+    LLM_ANALYSIS = "llm_analysis"
+    REPORT_GENERATION = "report_generation"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class Analysis(Base):
+    """Analysis model tracking pipeline execution.
+
+    AC-025: Video processed with 33-joint XYZ coordinate extraction
+    AC-026: Selected subject tracked across frames via bounding box
+    AC-027: Successful pose data stored in structured JSON
+    AC-028: Over 20% frame failure marks analysis as failed with guidance
+    AC-029: Processing progress logged and retrievable via status endpoint
+
+    Tracks the full analysis pipeline from queued to completed/failed.
+    """
+
+    __tablename__ = "analyses"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    video_id: Mapped[UUID] = mapped_column(
+        ForeignKey("videos.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    subject_id: Mapped[UUID] = mapped_column(
+        ForeignKey("subjects.id"), nullable=False
+    )
+    body_specs_id: Mapped[UUID] = mapped_column(
+        ForeignKey("body_specs.id"), nullable=False
+    )
+
+    # Pipeline status
+    _status: Mapped[str] = mapped_column(
+        "status", String(20), default="queued", nullable=False
+    )
+
+    @property
+    def status(self) -> AnalysisStatus:
+        """Get status as enum."""
+        return AnalysisStatus(self._status) if self._status else AnalysisStatus.QUEUED
+
+    @status.setter
+    def status(self, value: AnalysisStatus | str) -> None:
+        """Set status from enum or string."""
+        if isinstance(value, AnalysisStatus):
+            self._status = value.value
+        else:
+            self._status = value
+    current_stage: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    progress_percent: Mapped[int] = mapped_column(SmallInteger, default=0, insert_default=0)
+
+    # Stage timestamps
+    queued_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    pose_started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    pose_completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    stamps_started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    stamps_completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    llm_started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    llm_completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    failed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    # Error tracking
+    error_code: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    retry_count: Mapped[int] = mapped_column(SmallInteger, default=0)
+
+    # Result references
+    report_id: Mapped[Optional[UUID]] = mapped_column(nullable=True)
+    pose_data_key: Mapped[Optional[str]] = mapped_column(
+        String(512), nullable=True
+    )  # S3 key for pose JSON
+
+    # Processing stats (for progress tracking)
+    total_frames: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    frames_processed: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    frames_failed: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    # Worker tracking
+    worker_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    __table_args__ = (
+        Index("idx_analyses_video", "video_id"),
+        Index("idx_analyses_user", "user_id"),
+        Index("idx_analyses_status", "status"),
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert model to dictionary for API response."""
+        return {
+            "analysis_id": str(self.id),
+            "video_id": str(self.video_id),
+            "user_id": str(self.user_id),
+            "status": self.status.value if isinstance(self.status, AnalysisStatus) else self.status,
+            "current_stage": self.current_stage,
+            "progress_percent": self.progress_percent,
+            "queued_at": self.queued_at.isoformat() if self.queued_at else None,
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "failed_at": self.failed_at.isoformat() if self.failed_at else None,
+            "error_code": self.error_code,
+            "error_message": self.error_message,
+            "total_frames": self.total_frames,
+            "frames_processed": self.frames_processed,
+        }
+
+    def calculate_failure_rate(self) -> float:
+        """Calculate frame failure rate.
+
+        AC-028: Over 20% frame failure marks analysis as failed with guidance
+
+        Returns:
+            Failure rate as a decimal (0.0 to 1.0)
+        """
+        if not self.total_frames or self.total_frames == 0:
+            return 0.0
+        frames_failed = self.frames_failed or 0
+        return frames_failed / self.total_frames
+
+    def should_fail_for_quality(self, threshold: float = 0.20) -> bool:
+        """Check if analysis should fail due to quality issues.
+
+        AC-028: Over 20% frame failure marks analysis as failed with guidance
+
+        Args:
+            threshold: Failure rate threshold (default 20%)
+
+        Returns:
+            True if failure rate exceeds threshold
+        """
+        return self.calculate_failure_rate() > threshold

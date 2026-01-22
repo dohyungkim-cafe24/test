@@ -1,0 +1,20 @@
+# Files changed for F002 Video Upload
+
+## Backend - Added
+backend/api/schemas/upload.py
+backend/api/models/upload.py
+backend/api/services/upload_service.py
+backend/api/routers/upload.py
+backend/tests/test_upload.py
+
+## Backend - Modified
+backend/api/main.py
+backend/api/services/database.py
+
+## Frontend - Added
+frontend/src/lib/upload/api.ts
+frontend/src/lib/upload/index.ts
+frontend/src/components/upload/UploadDropzone.tsx
+frontend/src/components/upload/UploadProgress.tsx
+frontend/src/components/upload/index.ts
+frontend/src/app/(protected)/upload/page.tsx

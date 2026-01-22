@@ -1,0 +1,36 @@
+# UI States — TEMPLATE
+
+> Owner: ux-designer
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+>
+> Tip: when a UI state is feature-specific, annotate the section or heading with `@F###` to enable feature-scoped extraction.
+
+## Inputs
+
+- docs/ux/UX_SPEC.md
+- docs/ux/DESIGN_SYSTEM.md
+
+---
+
+## Loading
+
+PLACEHOLDER
+
+## Empty
+
+PLACEHOLDER
+
+## Error
+
+PLACEHOLDER
+
+## Validation
+
+PLACEHOLDER
+
+## Success
+
+PLACEHOLDER

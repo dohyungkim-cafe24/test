@@ -1,0 +1,9 @@
+# gate: verify_dod
+# utc: 20260122T002944516404Z
+# stage: test
+# run: 20260122-002802-5a6cdd
+# cmd: python3 .claude/scripts/verify_dod.py --features-json /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/features.json --incremental
+
+DoD OK: all passes=true features have required evidence. verified=0 skipped=10 total=10
+
+# exit_code: 0

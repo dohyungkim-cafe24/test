@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend/.venv/bin/python3.13
+cachedir: .pytest_cache
+rootdir: /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 18 items
+
+projects/punch-analytics/backend/tests/test_processing.py::TestAnalysisModel::test_analysis_status_enum_values PASSED [  5%]
+projects/punch-analytics/backend/tests/test_processing.py::TestAnalysisModel::test_analysis_model_creation PASSED [ 11%]
+projects/punch-analytics/backend/tests/test_processing.py::TestAnalysisModel::test_analysis_status_transitions PASSED [ 16%]
+projects/punch-analytics/backend/tests/test_processing.py::TestAnalysisModel::test_analysis_can_fail_from_any_state PASSED [ 22%]
+projects/punch-analytics/backend/tests/test_processing.py::TestAnalysisSchemas::test_start_analysis_request_validation PASSED [ 27%]
+projects/punch-analytics/backend/tests/test_processing.py::TestAnalysisSchemas::test_start_analysis_response_structure PASSED [ 33%]
+projects/punch-analytics/backend/tests/test_processing.py::TestAnalysisSchemas::test_processing_status_response_in_progress PASSED [ 38%]
+projects/punch-analytics/backend/tests/test_processing.py::TestAnalysisSchemas::test_processing_status_response_failed PASSED [ 44%]
+projects/punch-analytics/backend/tests/test_processing.py::TestProcessingService::test_start_analysis_creates_queued_analysis PASSED [ 50%]
+projects/punch-analytics/backend/tests/test_processing.py::TestProcessingService::test_update_analysis_progress PASSED [ 55%]
+projects/punch-analytics/backend/tests/test_processing.py::TestProcessingService::test_mark_analysis_failed_over_20_percent PASSED [ 61%]
+projects/punch-analytics/backend/tests/test_processing.py::TestPoseEstimationService::test_pose_data_structure_has_33_joints PASSED [ 66%]
+projects/punch-analytics/backend/tests/test_processing.py::TestPoseEstimationService::test_joint_coordinate_xyz_values PASSED [ 72%]
+projects/punch-analytics/backend/tests/test_processing.py::TestPoseEstimationService::test_pose_data_includes_tracking_info PASSED [ 77%]
+projects/punch-analytics/backend/tests/test_processing.py::TestProcessingRouter::test_router_has_start_analysis_endpoint PASSED [ 83%]
+projects/punch-analytics/backend/tests/test_processing.py::TestProcessingRouter::test_router_has_status_endpoint PASSED [ 88%]
+projects/punch-analytics/backend/tests/test_processing.py::TestProcessingRouter::test_start_analysis_request_schema PASSED [ 94%]
+projects/punch-analytics/backend/tests/test_processing.py::TestProcessingRouter::test_processing_status_response_schema PASSED [100%]
+
+============================== 18 passed in 0.25s ==============================

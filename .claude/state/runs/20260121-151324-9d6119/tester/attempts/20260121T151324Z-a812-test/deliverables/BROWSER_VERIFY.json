@@ -1,0 +1,21 @@
+{
+  "feature_id": "F003",
+  "feature_name": "Subject Selection",
+  "verification_timestamp": "2026-01-22T00:13:24Z",
+  "browser_runtime_available": false,
+  "tool_calls_count": 0,
+  "tool_names": [],
+  "status": "unavailable",
+  "reason": "Dev server not running and frontend UI component not implemented",
+  "evidence": {
+    "console_log": "evidence/browser/console.jsonl",
+    "network_log": "evidence/browser/network.jsonl",
+    "screenshots_dir": "evidence/screenshots/"
+  },
+  "notes": [
+    "Backend API implementation complete and tested (21/21 tests pass)",
+    "Frontend Subject Selection component not yet implemented",
+    "No dev server available at port 3000 or 5173",
+    "Browser runtime verification cannot be completed without running UI"
+  ]
+}

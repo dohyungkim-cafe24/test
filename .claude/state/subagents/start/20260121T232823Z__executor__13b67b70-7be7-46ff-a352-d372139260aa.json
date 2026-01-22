@@ -1,0 +1,15 @@
+{
+  "timestamp": "20260121T232823Z",
+  "project": "projects/punch-analytics",
+  "agent": "executor",
+  "session_id": "13b67b70-7be7-46ff-a352-d372139260aa",
+  "hook_event_name": "SubagentStart",
+  "raw": {
+    "session_id": "13b67b70-7be7-46ff-a352-d372139260aa",
+    "transcript_path": "/Users/briankim/.claude/projects/-Users-briankim-Desktop-ai-agi-dev/13b67b70-7be7-46ff-a352-d372139260aa.jsonl",
+    "cwd": "/Users/briankim/Desktop/ai/agi-dev",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a40e218",
+    "agent_type": "executor"
+  }
+}

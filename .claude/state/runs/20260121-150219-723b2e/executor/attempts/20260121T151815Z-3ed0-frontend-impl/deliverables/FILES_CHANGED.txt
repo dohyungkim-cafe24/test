@@ -1,0 +1,16 @@
+# Files Changed - F003 Subject Selection (Frontend)
+
+## Added
+frontend/src/lib/subject/api.ts
+frontend/src/lib/subject/index.ts
+frontend/src/components/subject/ThumbnailGrid.tsx
+frontend/src/components/subject/PersonSelector.tsx
+frontend/src/components/subject/index.ts
+frontend/src/app/(protected)/subject/[videoId]/page.tsx
+frontend/src/lib/subject/__tests__/api.test.ts
+frontend/jest.config.js
+frontend/jest.setup.js
+
+## Modified
+frontend/tsconfig.json
+frontend/package.json

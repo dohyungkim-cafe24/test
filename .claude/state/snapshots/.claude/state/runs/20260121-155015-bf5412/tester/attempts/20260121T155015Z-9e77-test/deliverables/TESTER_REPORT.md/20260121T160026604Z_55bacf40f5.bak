@@ -1,0 +1,222 @@
+# TESTER_REPORT - F004 Body Specification Input
+
+**Feature**: F004 - Body Specification Input
+**Test Run ID**: 20260121-155015-bf5412
+**Attempt ID**: 20260121T155015Z-9e77-test
+**Tested**: 2026-01-22
+**Status**: PARTIAL PASS (Backend PASS, Frontend NOT IMPLEMENTED)
+
+---
+
+## 1. Inputs
+
+Files consulted:
+- `/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/features.json`
+- `/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/specs/bdd/body-specs.feature`
+- `/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/docs/ux/UX_CONTRACT.md`
+- `/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend/tests/test_body_specs.py`
+- `/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend/api/schemas/body_specs.py`
+- `/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend/api/services/body_specs_service.py`
+- `/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend/api/routers/body_specs.py`
+
+---
+
+## 2. Environment
+
+- **OS**: macOS Darwin 24.6.0
+- **Project**: punch-analytics
+- **Python**: 3.13.5 (via /tmp/test-venv)
+- **pytest**: 9.0.2
+- **Backend Framework**: FastAPI with Pydantic 2.x
+- **Dev Server Status**: NOT RUNNING (frontend at localhost:3000 and backend at localhost:8000 both unavailable)
+
+---
+
+## 3. Commands Executed
+
+### 3.1 Backend Tests (PASSED)
+
+**Command**:
+```bash
+export PYTHONPATH="/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend"
+/tmp/test-venv/bin/pytest /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/backend/tests/test_body_specs.py -v
+```
+
+**Output**:
+```
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0
+plugins: anyio-4.12.1, asyncio-1.3.0
+
+24 tests collected
+
+TestBodySpecsSchemas::test_experience_level_enum_valid PASSED
+TestBodySpecsSchemas::test_stance_enum_valid PASSED
+TestBodySpecsSchemas::test_body_specs_create_valid PASSED
+TestBodySpecsSchemas::test_height_below_minimum_rejected PASSED
+TestBodySpecsSchemas::test_height_above_maximum_rejected PASSED
+TestBodySpecsSchemas::test_weight_below_minimum_rejected PASSED
+TestBodySpecsSchemas::test_weight_above_maximum_rejected PASSED
+TestBodySpecsSchemas::test_invalid_experience_level_rejected PASSED
+TestBodySpecsSchemas::test_invalid_stance_rejected PASSED
+TestBodySpecsSchemas::test_body_specs_response_valid PASSED
+TestBodySpecsSchemas::test_prefill_response_valid PASSED
+TestBodySpecsSchemas::test_prefill_response_no_saved_specs PASSED
+TestBodySpecsService::test_create_body_specs_success PASSED
+TestBodySpecsService::test_create_body_specs_idor_prevention PASSED
+TestBodySpecsService::test_create_body_specs_updates_user_profile PASSED
+TestBodySpecsService::test_get_prefill_returns_saved_specs PASSED
+TestBodySpecsService::test_get_prefill_no_saved_specs PASSED
+TestBodySpecsRouter::test_create_body_specs_requires_auth PASSED
+TestBodySpecsRouter::test_create_body_specs_success PASSED
+TestBodySpecsRouter::test_create_body_specs_video_not_found PASSED
+TestBodySpecsRouter::test_create_body_specs_invalid_height PASSED
+TestBodySpecsRouter::test_create_body_specs_invalid_weight PASSED
+TestBodySpecsRouter::test_get_prefill_success PASSED
+TestBodySpecsRouter::test_get_prefill_requires_auth PASSED
+
+======================== 24 passed, 2 warnings in 0.35s ========================
+```
+
+### 3.2 Dev Server Check (NOT RUNNING)
+
+**Commands**:
+```bash
+curl -s --connect-timeout 2 http://localhost:3000  # Frontend: NOT RUNNING
+curl -s --connect-timeout 2 http://localhost:5173  # Vite: NOT RUNNING
+curl -s --connect-timeout 2 http://localhost:8000/api/health  # Backend: NOT RUNNING
+```
+
+### 3.3 Frontend Implementation Check
+
+**Finding**: The frontend body-specs page does NOT exist yet.
+
+Expected route: `/body-specs/[videoId]/page.tsx`
+Actual state: Directory `/frontend/src/app/(protected)/body-specs/` does not exist.
+
+Existing protected routes:
+- `/frontend/src/app/(protected)/dashboard/`
+- `/frontend/src/app/(protected)/subject/`
+- `/frontend/src/app/(protected)/upload/`
+
+---
+
+## 4. Results
+
+### 4.1 BDD Scenario Coverage Matrix
+
+| BDD Scenario | Backend Test | Status |
+|--------------|--------------|--------|
+| User enters valid body specifications | test_body_specs_create_valid, test_create_body_specs_success | PASS |
+| Height below minimum shows validation error | test_height_below_minimum_rejected, test_create_body_specs_invalid_height | PASS |
+| Height above maximum shows validation error | test_height_above_maximum_rejected | PASS |
+| Weight below minimum shows validation error | test_weight_below_minimum_rejected, test_create_body_specs_invalid_weight | PASS |
+| Weight above maximum shows validation error | test_weight_above_maximum_rejected | PASS |
+| All fields required for submission | Implicit in BodySpecsCreate schema (all fields required) | PASS |
+| Body specs pre-filled for returning user | test_get_prefill_returns_saved_specs, test_get_prefill_success | PASS |
+| Invalid number format shows error | test_invalid_experience_level_rejected, test_invalid_stance_rejected | PASS |
+
+### 4.2 Acceptance Criteria Coverage
+
+| AC | Description | Backend | Frontend | Overall |
+|----|-------------|---------|----------|---------|
+| AC-018 | Height input accepts 100-250cm range | PASS | N/A | PARTIAL |
+| AC-019 | Weight input accepts 30-200kg range | PASS | N/A | PARTIAL |
+| AC-020 | Experience level dropdown with four options | PASS (enum) | N/A | PARTIAL |
+| AC-021 | Stance selection between Orthodox and Southpaw | PASS (enum) | N/A | PARTIAL |
+| AC-022 | Start Analysis enabled when all fields complete | N/A | NOT IMPL | FAIL |
+| AC-023 | Invalid values show inline validation errors | PASS (422) | NOT IMPL | PARTIAL |
+| AC-024 | Body specs persisted and pre-filled on return | PASS | NOT IMPL | PARTIAL |
+
+### 4.3 Security Validation
+
+| Security Check | Status | Evidence |
+|----------------|--------|----------|
+| Authentication required for POST | PASS | test_create_body_specs_requires_auth |
+| Authentication required for GET prefill | PASS | test_get_prefill_requires_auth |
+| IDOR prevention (user can only access own videos) | PASS | test_create_body_specs_idor_prevention |
+| Video ownership verification | PASS | test_create_body_specs_video_not_found |
+
+### 4.4 Summary
+
+| Component | Tests | Passed | Failed | Status |
+|-----------|-------|--------|--------|--------|
+| Backend Schemas | 12 | 12 | 0 | PASS |
+| Backend Service | 5 | 5 | 0 | PASS |
+| Backend Router | 7 | 7 | 0 | PASS |
+| **Backend Total** | **24** | **24** | **0** | **PASS** |
+| Frontend Page | - | - | - | NOT IMPLEMENTED |
+| UI Screenshots | - | - | - | N/A (no frontend) |
+
+---
+
+## 5. Evidence
+
+### 5.1 Screenshot Directory
+Path: `/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics/.claude/state/runs/20260121-155015-bf5412/tester/attempts/20260121T155015Z-9e77-test/evidence/screenshots/`
+
+**Status**: NO SCREENSHOTS CAPTURED
+**Reason**: Frontend body-specs page is not implemented. No UI to capture.
+
+### 5.2 Backend Implementation Artifacts
+
+The following backend files are fully implemented and tested:
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `backend/api/schemas/body_specs.py` | Request/response validation | IMPLEMENTED |
+| `backend/api/services/body_specs_service.py` | Business logic + IDOR prevention | IMPLEMENTED |
+| `backend/api/routers/body_specs.py` | API endpoints | IMPLEMENTED |
+| `backend/api/models/body_specs.py` | Database model | IMPLEMENTED |
+| `backend/tests/test_body_specs.py` | Unit/integration tests | 24 tests PASSING |
+
+### 5.3 API Endpoints Verified
+
+| Endpoint | Method | Auth | Status |
+|----------|--------|------|--------|
+| `/api/v1/analysis/body-specs/{video_id}` | POST | Required | IMPLEMENTED |
+| `/api/v1/analysis/body-specs/prefill` | GET | Required | IMPLEMENTED |
+
+---
+
+## 6. Findings / Risks
+
+### 6.1 Blocking Issues
+
+| Severity | Finding | Impact | Recommended Action |
+|----------|---------|--------|-------------------|
+| BLOCKING | Frontend body-specs page not implemented | Feature cannot be tested end-to-end | Implement `/frontend/src/app/(protected)/body-specs/[videoId]/page.tsx` |
+| BLOCKING | No UI screenshots available | UX verification cannot proceed | Complete frontend implementation, then re-run tester |
+
+### 6.2 Risks
+
+| Severity | Risk | Mitigation |
+|----------|------|------------|
+| MEDIUM | Frontend validation may differ from backend | Ensure frontend uses same validation rules (100-250cm, 30-200kg) |
+| LOW | Prefill API does not validate user profile completeness | Frontend should handle partial prefill gracefully |
+
+### 6.3 Notes
+
+1. Backend implementation is complete and all 24 tests pass.
+2. The navigation from subject selection to body-specs is wired up in `subject/[videoId]/page.tsx` (line 160: `router.push('/body-specs/${videoId}')`).
+3. Frontend body-specs page must be created to complete F004.
+4. Once frontend is implemented, re-run this test with dev server running to capture UI screenshots.
+
+---
+
+## 7. Verdict
+
+**OVERALL STATUS: FAIL**
+
+F004 cannot be marked as PASS because:
+1. Frontend body-specs page is NOT IMPLEMENTED
+2. UI screenshots are REQUIRED (`requires_screenshots=true`) but cannot be captured
+3. UX judge verification is REQUIRED (`requires_ux_judge=true`) but has no UI to verify
+
+**Backend Status: PASS** (24/24 tests passing)
+**Frontend Status: NOT IMPLEMENTED**
+
+**Next Steps**:
+1. Implement frontend body-specs page at `frontend/src/app/(protected)/body-specs/[videoId]/page.tsx`
+2. Start dev servers (frontend + backend)
+3. Re-run `/agi-test --feature F004` to capture screenshots and complete UX verification

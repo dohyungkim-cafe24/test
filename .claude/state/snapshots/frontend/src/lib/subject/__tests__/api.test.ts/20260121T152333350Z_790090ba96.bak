@@ -1,0 +1,236 @@
+/**
+ * Subject Selection API client tests
+ * @file api.test.ts
+ * @feature F003 - Subject Selection
+ */
+
+import {
+  getThumbnails,
+  selectSubject,
+  SubjectError,
+  ThumbnailsResponse,
+  SubjectSelectResponse,
+} from '../api';
+
+// Mock fetch
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
+describe('Subject Selection API', () => {
+  const accessToken = 'test-token';
+  const videoId = 'test-video-id';
+
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
+
+  describe('getThumbnails', () => {
+    it('should fetch thumbnails successfully', async () => {
+      const mockResponse: ThumbnailsResponse = {
+        video_id: videoId,
+        status: 'ready',
+        total_persons_detected: 2,
+        thumbnails: [
+          {
+            thumbnail_id: 'thumb-1',
+            frame_number: 0,
+            timestamp_seconds: 0,
+            image_url: 'http://example.com/thumb1.jpg',
+            detected_persons: [
+              {
+                person_id: 'person-1',
+                bounding_box: { x: 10, y: 10, width: 20, height: 40 },
+                confidence: 0.95,
+              },
+            ],
+          },
+        ],
+        auto_select: null,
+        message: null,
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const result = await getThumbnails(accessToken, videoId);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining(`/analysis/thumbnails/${videoId}`),
+        expect.objectContaining({
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should return processing status when thumbnails not ready', async () => {
+      const mockResponse: ThumbnailsResponse = {
+        video_id: videoId,
+        status: 'processing',
+        total_persons_detected: 0,
+        thumbnails: [],
+        auto_select: null,
+        message: 'Extracting frames...',
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const result = await getThumbnails(accessToken, videoId);
+
+      expect(result.status).toBe('processing');
+    });
+
+    it('should return auto_select info for single person', async () => {
+      const mockResponse: ThumbnailsResponse = {
+        video_id: videoId,
+        status: 'ready',
+        total_persons_detected: 1,
+        thumbnails: [
+          {
+            thumbnail_id: 'thumb-1',
+            frame_number: 0,
+            timestamp_seconds: 0,
+            image_url: 'http://example.com/thumb1.jpg',
+            detected_persons: [
+              {
+                person_id: 'person-1',
+                bounding_box: { x: 10, y: 10, width: 20, height: 40 },
+                confidence: 0.95,
+              },
+            ],
+          },
+        ],
+        auto_select: {
+          thumbnail_id: 'thumb-1',
+          person_id: 'person-1',
+          bounding_box: { x: 10, y: 10, width: 20, height: 40 },
+        },
+        message: null,
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const result = await getThumbnails(accessToken, videoId);
+
+      expect(result.auto_select).not.toBeNull();
+      expect(result.auto_select?.person_id).toBe('person-1');
+    });
+
+    it('should throw SubjectError on 404', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ detail: 'Video not found' }),
+      });
+
+      await expect(getThumbnails(accessToken, videoId)).rejects.toMatchObject({
+        name: 'SubjectError',
+        code: 'VIDEO_NOT_FOUND',
+        statusCode: 404,
+      });
+    });
+
+    it('should throw SubjectError on 401', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ detail: 'Not authenticated' }),
+      });
+
+      await expect(getThumbnails(accessToken, videoId)).rejects.toMatchObject({
+        name: 'SubjectError',
+        code: 'UNAUTHORIZED',
+        statusCode: 401,
+      });
+    });
+  });
+
+  describe('selectSubject', () => {
+    const thumbnailId = 'thumb-1';
+    const personId = 'person-1';
+
+    it('should select subject successfully', async () => {
+      const mockResponse: SubjectSelectResponse = {
+        subject_id: 'subject-1',
+        video_id: videoId,
+        person_id: personId,
+        bounding_box: { x: 10, y: 10, width: 20, height: 40 },
+        auto_selected: false,
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      });
+
+      const result = await selectSubject(
+        accessToken,
+        videoId,
+        thumbnailId,
+        personId
+      );
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining(`/analysis/subject/${videoId}`),
+        expect.objectContaining({
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            thumbnail_id: thumbnailId,
+            person_id: personId,
+          }),
+        })
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should throw SubjectError on 404', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ detail: 'Person not found in thumbnail' }),
+      });
+
+      await expect(
+        selectSubject(accessToken, videoId, thumbnailId, personId)
+      ).rejects.toThrow(SubjectError);
+      await expect(
+        selectSubject(accessToken, videoId, thumbnailId, personId)
+      ).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+        statusCode: 404,
+      });
+    });
+
+    it('should throw SubjectError on 409 conflict', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({ detail: 'Subject already selected' }),
+      });
+
+      await expect(
+        selectSubject(accessToken, videoId, thumbnailId, personId)
+      ).rejects.toThrow(SubjectError);
+      await expect(
+        selectSubject(accessToken, videoId, thumbnailId, personId)
+      ).rejects.toMatchObject({
+        code: 'SUBJECT_EXISTS',
+        statusCode: 409,
+      });
+    });
+  });
+});

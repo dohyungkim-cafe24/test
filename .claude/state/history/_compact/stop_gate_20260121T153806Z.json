@@ -1,0 +1,18 @@
+{
+  "any_gate_ran": true,
+  "failures": [],
+  "git_hash": "",
+  "last_history_epoch": 1769004944.339422,
+  "last_history_utc": "20260121T141543831652Z",
+  "message": "stop gate OK",
+  "ok": true,
+  "project": "projects/punch-analytics",
+  "report": "projects/punch-analytics/.claude/state/gates/reports/stop_gate_latest.md",
+  "report_history_last": "projects/punch-analytics/.claude/state/gates/reports/history/stop_gate_20260121T141543831652Z.md",
+  "report_latest": "projects/punch-analytics/.claude/state/gates/reports/stop_gate_latest.md",
+  "report_sig": "0bc99628453f8a0a29e898f501634338aff5331c",
+  "run_id": "-",
+  "stage": "test",
+  "status": "OK",
+  "utc": "20260121T141543831652Z"
+}

@@ -1,0 +1,58 @@
+# Requirements Baseline — TEMPLATE
+
+> Owner: product-manager
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/DOC_CONTRACT.md
+- docs/product/PRD.md
+- docs/product/MARKET_BENCHMARK.md
+- Any primary research notes (link or summary)
+
+---
+
+## Overview
+
+PLACEHOLDER
+
+## Assumptions
+
+PLACEHOLDER
+
+## Constraints
+
+PLACEHOLDER
+
+## Personas
+
+PLACEHOLDER
+
+## User needs
+
+PLACEHOLDER
+
+## Non-negotiables
+
+- [PLACEHOLDER] Hard constraints we will not compromise on.
+
+## Quality bar
+
+Provide a concrete, testable bar (bullets) that can be used by downstream QA. Include at least:
+- Security
+- Performance
+- UX
+- Test coverage
+
+PLACEHOLDER
+
+## Out of scope
+
+PLACEHOLDER
+
+## Open questions
+
+PLACEHOLDER

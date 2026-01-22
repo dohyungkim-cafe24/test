@@ -1,0 +1,215 @@
+'use client';
+
+/**
+ * Dashboard page (protected)
+ * @file page.tsx
+ * @feature F001 - User Authentication
+ */
+
+import React from 'react';
+import Box from '@mui/material/Box';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Avatar from '@mui/material/Avatar';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import AddIcon from '@mui/icons-material/Add';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import { useAuth } from '@/lib/auth/hooks';
+import { useRouter } from 'next/navigation';
+
+/**
+ * Dashboard content (shown after auth)
+ */
+function DashboardContent() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    handleMenuClose();
+    await logout();
+    router.push('/');
+  };
+
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      {/* App Bar */}
+      <AppBar position="static" color="default" elevation={0}>
+        <Toolbar>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ flexGrow: 1, color: 'primary.main', fontWeight: 700 }}
+          >
+            PunchAnalytics
+          </Typography>
+
+          {/* User Profile Menu */}
+          <IconButton onClick={handleMenuOpen} size="small">
+            <Avatar
+              src={user?.avatar_url || undefined}
+              alt={user?.name || user?.email}
+              sx={{ width: 36, height: 36 }}
+            >
+              {user?.name?.[0] || user?.email?.[0]?.toUpperCase()}
+            </Avatar>
+          </IconButton>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+          >
+            <MenuItem disabled>
+              <Typography variant="body2" color="text.secondary">
+                {user?.email}
+              </Typography>
+            </MenuItem>
+            <MenuItem onClick={handleLogout}>
+              Log out
+              <span style={{ marginLeft: 8, fontSize: '0.85em', opacity: 0.7 }}>
+                로그아웃
+              </span>
+            </MenuItem>
+          </Menu>
+        </Toolbar>
+      </AppBar>
+
+      {/* Main Content */}
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Welcome Section */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Welcome, {user?.name || 'Boxer'}!
+            <span
+              style={{
+                display: 'block',
+                fontSize: '0.6em',
+                opacity: 0.7,
+                marginTop: 4,
+              }}
+            >
+              환영합니다, {user?.name || '복서'}님!
+            </span>
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Upload a training video to get started with AI analysis.
+            <br />
+            <span style={{ fontSize: '0.9em' }}>
+              트레이닝 영상을 업로드하여 AI 분석을 시작하세요.
+            </span>
+          </Typography>
+        </Box>
+
+        {/* Upload CTA */}
+        <Card
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 6,
+            mb: 4,
+            border: '2px dashed',
+            borderColor: 'primary.light',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            '&:hover': {
+              borderColor: 'primary.main',
+              backgroundColor: 'primary.light',
+            },
+          }}
+          onClick={() => {
+            // TODO: Navigate to upload page when implemented
+            console.log('Navigate to upload');
+          }}
+        >
+          <AddIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+          <Typography variant="h6" color="primary.main" gutterBottom>
+            Upload Training Video
+            <span
+              style={{ display: 'block', fontSize: '0.75em', opacity: 0.8 }}
+            >
+              트레이닝 영상 업로드
+            </span>
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            MP4, MOV, or WebM • 1-3 minutes • Max 500MB
+          </Typography>
+        </Card>
+
+        {/* Recent Reports (empty state) */}
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Recent Reports
+            <span style={{ marginLeft: 8, fontSize: '0.7em', opacity: 0.7 }}>
+              최근 분석 보고서
+            </span>
+          </Typography>
+          <Card>
+            <CardContent
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                py: 6,
+              }}
+            >
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                No reports yet
+                <span style={{ display: 'block', fontSize: '0.9em' }}>
+                  아직 분석 보고서가 없습니다
+                </span>
+              </Typography>
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                sx={{ mt: 2 }}
+                onClick={() => console.log('Navigate to upload')}
+              >
+                Upload your first video
+                <span style={{ marginLeft: 8, fontSize: '0.85em', opacity: 0.7 }}>
+                  첫 영상 업로드
+                </span>
+              </Button>
+            </CardContent>
+          </Card>
+        </Box>
+      </Container>
+    </Box>
+  );
+}
+
+/**
+ * Dashboard page with auth guard
+ */
+export default function DashboardPage() {
+  return (
+    <AuthGuard>
+      <DashboardContent />
+    </AuthGuard>
+  );
+}

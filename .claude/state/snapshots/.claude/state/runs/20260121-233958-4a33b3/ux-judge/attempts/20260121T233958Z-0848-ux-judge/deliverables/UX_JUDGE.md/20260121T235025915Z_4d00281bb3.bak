@@ -1,0 +1,190 @@
+# UX Judge Report: F008 - Report Display
+
+**Feature**: F008 - Report Display
+**Verdict**: FAIL
+**Date**: 2026-01-22
+**Attempt**: 20260121T233958Z-0848-ux-judge
+
+---
+
+## Inputs
+
+Files consulted for this evaluation:
+
+| Document | Path |
+|----------|------|
+| UX_VERIFY.json | `.claude/state/runs/.../tester/attempts/.../deliverables/UX_VERIFY.json` |
+| UX_CONTRACT.md | `docs/ux/UX_CONTRACT.md` |
+| DESIGN_SYSTEM.md | `docs/ux/DESIGN_SYSTEM.md` |
+| UX_SPEC.md | `docs/ux/UX_SPEC.md` |
+| UI_STATES.md | `docs/ux/UI_STATES.md` |
+| COPY.md | `docs/ux/COPY.md` |
+| REQUIREMENTS_BASELINE.md | `docs/product/REQUIREMENTS_BASELINE.md` |
+| MARKET_BENCHMARK.md | `docs/product/MARKET_BENCHMARK.md` |
+| TESTER_REPORT.md | `.../tester/attempts/.../deliverables/TESTER_REPORT.md` |
+| report_page.png | `.../evidence/screenshots/report_page.png` |
+
+---
+
+## Verdict: FAIL
+
+**Reason**: 3 BLOCKER violations related to missing visual evidence. The UX_VERIFY deterministic checks passed but the contract requires visual evidence that demonstrably shows the Report Display UI. The single screenshot file is corrupt/empty (appears as a 1x1 pixel image) and does not satisfy evidence requirements.
+
+---
+
+## Violations
+
+### UXJ-001 (BLOCKER): Missing Valid Journey Screenshots
+
+**Contract Reference**: UX_CONTRACT.md > Evidence > Required Evidence for Launch > Journey Screenshots
+
+**Description**: Missing valid screenshots for Report Display (US-008) user journey. The single screenshot file (report_page.png) is corrupt/empty and does not show the report UI.
+
+**Evidence**:
+- `evidence/screenshots/report_page.png` - File exists but displays as approximately 1x1 pixel green image
+- TESTER_REPORT.md Section 5.2 explicitly states: "No UI screenshots captured. Reason: Dev server not running, UI requires authentication"
+
+**Fix Steps**:
+1. Start backend server: `cd backend && uvicorn api.main:app --reload`
+2. Start frontend server: `cd frontend && npm run dev`
+3. Create test data with a valid report in database
+4. Navigate to `/report/{report_id}` with authenticated session
+5. Capture screenshots at 375px (mobile) and 1280px (desktop) viewports
+6. Ensure screenshots show: Summary, Metrics grid, Strengths, Weaknesses, Recommendations, Key Moments, AI disclaimer
+
+**Verification**:
+- Each screenshot file opens and displays recognizable UI content
+- All 8 ACs for F008 have visual evidence
+- Mobile and desktop viewports both captured
+
+---
+
+### UXJ-002 (BLOCKER): Missing UI State Screenshots
+
+**Contract Reference**: UX_CONTRACT.md > Evidence > Required Evidence for Launch > State Screenshots
+
+**Description**: Missing UI state screenshots for Report Display. Required states: Loading (skeleton), Error, Success (loaded report). None captured.
+
+**Evidence**:
+- `evidence/screenshots/` contains only 1 file which is corrupt
+- UI_STATES.md specifies Report View Loading states with skeleton patterns for Header, Summary Card, Metrics Grid, Analysis Sections, and Timestamps
+
+**Fix Steps**:
+1. Capture Loading state: Show skeleton loaders for header, summary, metrics, sections
+2. Capture Error state: Simulate 404 or network error to show error UI
+3. Capture Success state: Full report with all sections populated
+
+**Verification**:
+- Loading skeleton matches UI_STATES.md specification
+- Error state shows actionable message per COPY.md
+- Success state shows all report sections
+
+---
+
+### UXJ-003 (BLOCKER): Missing Mobile Viewport Screenshot
+
+**Contract Reference**: UX_CONTRACT.md > Evidence > Required Evidence for Launch > Mobile Screenshots
+
+**Description**: Missing mobile viewport (375px) screenshot for Report Display. Contract requires "100% functional" evidence on mobile.
+
+**Evidence**:
+- No valid mobile screenshot exists
+- TESTER_REPORT.md Next Steps item 3 lists "Mobile viewport" as needed
+
+**Fix Steps**:
+1. Set browser viewport to 375px width (iPhone SE)
+2. Navigate to report page with test data
+3. Capture full-page screenshot showing responsive layout
+
+**Verification**:
+- Touch targets are 48x48px minimum
+- All sections readable and functional
+- No horizontal overflow
+
+---
+
+## Heuristic Findings
+
+Despite the evidence gap, code review reveals positive implementation patterns:
+
+### Positive Findings
+
+| ID | Heuristic | Observation |
+|----|-----------|-------------|
+| H-001 | Consistency and standards | MUI components used throughout (Paper, Typography, Accordion, LinearProgress, CircularProgress). Implementation follows M3 patterns. |
+| H-002 | Error prevention / Recognition | AI disclaimer prominently displayed as required by Non-negotiables (Privacy and Trust section). |
+| H-003 | Match between system and real world | Korean localization implemented with bilingual copy. Boxing terminology follows Korean standards per COPY.md glossary. |
+
+### Concerns Pending Visual Verification
+
+| ID | Heuristic | Observation |
+|----|-----------|-------------|
+| H-004 | Visibility of system status | Performance logging implemented (console.warn for >1500ms load) but cannot verify actual performance without runtime evidence. No Lighthouse report captured. |
+
+---
+
+## Visual Evidence Review
+
+### Screenshot Analysis
+
+| File | Status | Observations |
+|------|--------|--------------|
+| `report_page.png` | FAIL | File is corrupt or placeholder. Appears as minimal 1x1 pixel green image. Cannot observe any UI elements. |
+
+### Required Screenshots Not Found
+
+Per UX_CONTRACT.md Evidence section, the following are required but missing:
+
+- [ ] Report page at 375px viewport (mobile)
+- [ ] Report page at 1280px viewport (desktop)
+- [ ] Report loading state (skeleton)
+- [ ] Report error state (404/network error)
+- [ ] Report success state (all sections visible)
+- [ ] Key Moments section expanded
+- [ ] Share dialog (US-009 overlap)
+
+---
+
+## Implementation Notes (from TESTER_REPORT.md)
+
+The code implementation covers all 8 acceptance criteria:
+
+| AC | Description | Implementation Status |
+|----|-------------|----------------------|
+| AC-041 | Summary section displays overall assessment | Implemented (page.tsx:468-530) |
+| AC-042 | Strengths section shows 3-5 observations | Implemented (page.tsx:578-601) |
+| AC-043 | Weaknesses section shows 3-5 improvement areas | Implemented (page.tsx:604-627) |
+| AC-044 | Recommendations section shows 3-5 actionable items | Implemented (page.tsx:630-653) |
+| AC-045 | Key moments section with timestamp links | Implemented (page.tsx:545-575) |
+| AC-046 | Metrics displayed with visual indicators | Implemented (page.tsx:533-542) |
+| AC-047 | Report page loads within 1.5 seconds | Implemented (performance logging) |
+| AC-048 | Report responsive on mobile and desktop | Implemented (responsive Container) |
+
+**Note**: Implementation looks complete but UX judgment requires visual runtime evidence, not just code review.
+
+---
+
+## Next Steps
+
+1. **Fix blocking dependency**: Add `greenlet>=3.0.0` to backend dependencies to unblock integration tests
+2. **Start development servers**: Backend (uvicorn) and Frontend (npm run dev)
+3. **Seed test data**: Create a valid report in the database
+4. **Capture screenshots**:
+   - Loading state (skeleton)
+   - Success state at 375px
+   - Success state at 1280px
+   - Error state (404)
+5. **Re-run UX verification** with valid screenshots
+6. **Request re-evaluation** from UX Judge
+
+---
+
+## Conclusion
+
+Feature F008 Report Display **cannot pass UX validation** due to missing visual evidence. The implementation appears complete based on code review, but the UX contract explicitly requires screenshot evidence demonstrating the UI in multiple states and viewports. The single screenshot file is corrupt and shows no content.
+
+Once valid screenshots are captured and placed in the evidence directory, re-run `/agi-test` and request a new UX Judge evaluation.
+
+---
+
+*Generated by UX Judge subagent*

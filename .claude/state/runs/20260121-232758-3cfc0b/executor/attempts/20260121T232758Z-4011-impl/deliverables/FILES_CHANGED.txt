@@ -1,0 +1,15 @@
+# Files Changed - F008 Report Display
+
+## Added
+
+backend/api/services/report_service.py
+backend/api/routers/reports.py
+backend/tests/test_reports.py
+frontend/src/lib/report/api.ts
+frontend/src/lib/report/index.ts
+frontend/src/app/(protected)/report/[id]/page.tsx
+
+## Modified
+
+backend/api/schemas/report.py
+backend/api/main.py

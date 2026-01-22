@@ -1,0 +1,34 @@
+# Story Map — TEMPLATE
+
+> Owner: product-manager
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+
+## Inputs
+
+- docs/product/PRD.md
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/MARKET_BENCHMARK.md
+
+---
+
+## Now
+
+PLACEHOLDER
+
+## Next
+
+PLACEHOLDER
+
+## Later
+
+PLACEHOLDER
+
+## Launch
+
+List Launch user stories as `US-###` ids.
+
+- US-001: PLACEHOLDER
+- US-002: PLACEHOLDER

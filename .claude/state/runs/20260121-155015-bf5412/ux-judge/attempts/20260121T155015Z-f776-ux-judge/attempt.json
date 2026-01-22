@@ -1,0 +1,11 @@
+{
+  "attempt_id": "20260121T155015Z-f776",
+  "created": "2026-01-22 00:50:15",
+  "agent": "ux-judge",
+  "label": "ux-judge",
+  "run_id": "20260121-155015-bf5412",
+  "scratch_dir": "scratch",
+  "deliverables_dir": "deliverables",
+  "evidence_dir": "evidence",
+  "sealed": false
+}

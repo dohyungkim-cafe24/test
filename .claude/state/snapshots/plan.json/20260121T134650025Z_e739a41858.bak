@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "generated_from": {
+    "source": "plan.md",
+    "sha256": "0ef2a87a147d54067d78c56fbe659d7cbc02477edfcca1a2ef4321bff6d9fd97",
+    "generated_at": "2026-01-21T13:29:24Z"
+  },
+  "inputs": [
+    "docs/product/REQUIREMENTS_BASELINE.md` - Frozen requirements and quality bar",
+    "docs/product/MARKET_BENCHMARK.md` - Competitor analysis and market expectations",
+    "docs/product/STORY_MAP.md` - User stories US-001 through US-010",
+    "docs/ux/UX_CONTRACT.md` - UX non-negotiables and quality criteria",
+    "docs/ux/DESIGN_SYSTEM.md` - Material Design 3 tokens and components",
+    "features.json` - Feature registry with BDD traces",
+    "specs/bdd/TRACEABILITY.json` - US to Feature to Scenario mapping",
+    "specs/bdd/BDD_INDEX.json` - All Gherkin scenarios by feature",
+    "docs/engineering/ARCHITECTURE.md` - System design and component mapping",
+    "docs/engineering/API.md` - REST API specification",
+    "docs/engineering/DATA_MODEL.md` - PostgreSQL schema and S3 storage"
+  ],
+  "sections": {
+    "scope": "",
+    "milestones": "### M1: Core Infrastructure (Foundation)\n**Target:** Week 1\n**Features:** F001\n\n**Exit criteria:**\n- OAuth login functional with Kakao and Google\n- JWT session management working\n- Protected route middleware deployed\n- User table migrations complete\n\n### M2: Upload and Selection (Input Flow)\n**Target:** Week 2\n**Features:** F002, F003, F004\n\n**Exit criteria:**\n- Chunked upload with resume capability functional\n- Thumbnail extraction pipeline working\n- Subject selection UI complete with bounding box storage\n- Body specs form with validation and persistence\n\n### M3: Processing Pipeline (Backend Core)\n**Target:** Week 3-4\n**Features:** F005, F006, F007\n\n**Exit criteria:**\n- MediaPipe pose estimation extracting 33 joints\n- Stamp detection identifying strikes and defensive actions\n- LLM analysis generating structured coaching feedback\n- Processing status updates via WebSocket\n- p95 processing time under 5 minutes\n\n### M4: Report and Sharing (Output Flow)\n**Target:** Week 5\n**Features:** F008, F009, F010\n\n**Exit criteria:**\n- Report display with all sections rendering correctly\n- Metrics visualization with Chart.js\n- Share link generation and public access working\n- Dashboard listing reports with navigation\n- All UI states (loading/empty/error/success) implemented\n\n---\n",
+    "critical_path": "```\nF001 (Auth) ──► F002 (Upload) ──► F003 (Subject) ──► F004 (Body Specs)\n                     │\n                     ▼\n              F005 (Pose Est.) ──► F006 (Stamps) ──► F007 (LLM)\n                                                        │\n                                                        ▼\n                              F010 (Dashboard) ◄── F008 (Report) ──► F009 (Share)\n```\n\n**Blocking dependencies:**\n1. F001 must complete before any authenticated feature\n2. F002 must complete before F003 (thumbnails extracted from uploaded video)\n3. F003 must complete before F005 (subject bounding box needed for tracking)\n4. F005 must complete before F006 (pose data required for stamp detection)\n5. F006 must complete before F007 (stamps included in LLM prompt)\n6. F007 must complete before F008 (analysis content rendered in report)\n\n---\n",
+    "risks": "",
+    "test_strategy": "### Unit Testing\n- **Framework:** pytest (backend), Jest (frontend)\n- **Coverage target:** 80% for business logic\n- **Focus areas:**\n  - OAuth token validation\n  - File validation (size, duration, format)\n  - Pose data transformation\n  - Stamp detection algorithms\n  - LLM prompt formatting\n  - Metrics calculation\n\n### Integration Testing\n- **Framework:** pytest with TestClient (FastAPI), Playwright (frontend)\n- **Focus areas:**\n  - OAuth callback flow\n  - Chunked upload assembly\n  - Processing pipeline (thumbnail to report)\n  - API endpoint contracts\n\n### End-to-End Testing\n- **Framework:** Playwright\n- **Critical journeys:**\n  1. New user signup -> upload -> select subject -> body specs -> view report\n  2. Return user -> dashboard -> view past report -> share\n  3. Shared link viewer -> view report without login\n\n### Performance Testing\n- **Framework:** k6 or Locust\n- **Targets:**\n  - 50 concurrent uploads without degradation\n  - 100 concurrent active users\n  - p95 API response under 500ms\n  - p95 processing under 5 minutes\n\n### Visual Testing\n- **Framework:** Playwright screenshots\n- **Capture points:** All UI states per feature\n- **Viewports:** 375px (mobile), 1280px (desktop)\n\n### Accessibility Testing\n- **Framework:** aXe-core via Playwright\n- **Standard:** WCAG 2.1 AA\n- **Focus:** Keyboard navigation, color contrast, labels\n\n### Security Testing\n- **OAuth token handling:** Ensure no leakage in logs/URL\n- **Input validation:** Fuzz testing on file uploads\n- **Authorization:** Verify users can only access own resources\n\n---\n",
+    "definition_of_done": ""
+  },
+  "title": "PunchAnalytics Implementation Plan"
+}

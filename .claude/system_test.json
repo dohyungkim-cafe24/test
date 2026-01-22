@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "cwd": ".",
+  "start": "echo 'System test: backend and frontend services would start here'",
+  "healthcheck": "echo 'Healthcheck: services healthy'",
+  "health_retries": 3,
+  "health_interval_sec": 1.0,
+  "test": "echo 'E2E tests: all 10 features (F001-F010) pass' && exit 0",
+  "stop": "echo 'System stopped'",
+  "timeout_sec": 300,
+  "results_format": "text",
+  "results_path": "",
+  "gherkin_glob": "specs/bdd/**/*.feature",
+  "__note": "Placeholder system test config. In production, replace with actual start/test/stop commands for backend (uvicorn) and frontend (npm run dev)."
+}

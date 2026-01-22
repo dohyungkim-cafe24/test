@@ -1,0 +1,3 @@
+{"timestamp": "2026-01-21T15:15:00.000Z", "level": "info", "message": "Application initialized", "source": "main"}
+{"timestamp": "2026-01-21T15:15:00.100Z", "level": "info", "message": "NextAuth session loaded", "source": "auth"}
+{"timestamp": "2026-01-21T15:15:00.200Z", "level": "info", "message": "Upload page mounted", "source": "upload"}

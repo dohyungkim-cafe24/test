@@ -1,0 +1,790 @@
+# Document Contract (Single Source of Truth)
+
+This project uses an **artifact contract** so that a multi‑discipline team (PM, UXR, Design, QA/BDD, Architecture, Eng, QA, Release) can work like a real world‑class org:
+
+- Specialists always know **exactly what to produce** (deliverables) and **where** to write them.
+- Promotion into canonical docs is deterministic and safe.
+- Quality gates can be objective (required docs, required sections, and **traceability**).
+
+## Golden Rules
+
+1. **Single source of truth**: `docs/DOC_CONTRACT.json` defines:
+   - (mirror) DOC_CONTRACT.md contains a fenced JSON mirror (sync via `/agi-contract-sync`)
+   - required canonical artifacts
+   - run/attempt deliverable filenames
+   - promotion rules
+   - stage gating + traceability rules
+2. **Versioned attempts (mutable deliverables; immutable manifest)**: Agents write artifacts into the attempt `deliverables/` directory. Deliverables may be revised in-place to satisfy gates. The attempt `MANIFEST.*` is immutable (contract); if the contract must change, create a new attempt and regenerate the manifest.
+3. **Canonical docs are publish-only**:
+   - Never edit `projects/<p>/docs/**`, `projects/<p>/specs/**`, `projects/<p>/features.json`, `projects/<p>/plan.md` directly.
+   - Only `/agi-promote` moves run artifacts into canonical locations.
+
+4. **Doc patch option (for small fixes)**:
+   - Many `kind: "file"` rules include an optional `src_patch` deliverable (`*.patch.json`).
+   - You may satisfy a required doc by providing either the full file (`src`) **or** the patch (`src_patch`).
+   - Patch format is documented in `.claude/docs/PUBLISHING.md#doc-patches`.
+
+## How the pipeline uses this contract
+
+- `/agi-*` commands generate a per-agent `MANIFEST.md` from this contract.
+- Subagents read the `MANIFEST.md` and produce exactly those deliverables.
+- `publish_from_run.sh` reads this contract and promotes only what is allowed for that stage.
+- `quality_audit.py` reads this contract and checks required docs/sections + traceability.
+
+## ID & Traceability Conventions
+
+- **User stories**: `US-001`, `US-002`, ...
+- **Features**: `F001`, `F002`, ... (these appear in `features.json`)
+- **Gherkin tags**:
+  - Every scenario MUST include `@F###` (feature id) tag.
+  - Optional: also tag with `@US-001` for story linkage.
+
+**Traceability quality gate (BDD stage and later):**
+- **Launch scope** is defined in `docs/product/STORY_MAP.md` under the `## Launch` heading.
+  - Launch must list **US-###** IDs as bullet items.
+- Every **Launch** user story must be traceable to at least one Feature and at least one executable Gherkin scenario tagged `@Fxxx`.
+- `specs/bdd/TRACEABILITY.json` must contain a machine-readable mapping linking:
+  `US-xxx -> Fxxx -> <gherkin file> -> <scenario name(s)>`.
+- (optional) `specs/bdd/TRACEABILITY.md` may contain a fenced YAML/JSON block for humans; publish keeps the fence in sync.
+
+---
+
+## Contract JSON (authoritative)
+
+```json
+{
+  "version": "1.6.8",
+  "stage_order": [
+    "discover",
+    "ux",
+    "bdd",
+    "arch",
+    "plan",
+    "build",
+    "test",
+    "quality",
+    "release"
+  ],
+  "id_rules": {
+    "user_story": "US-\\d{3,}",
+    "feature": "F\\d{3,}",
+    "gherkin_tag_feature": "@F\\d{3,}",
+    "gherkin_tag_story": "@US-\\d{3,}"
+  },
+  "promotion_rules": [
+    {
+      "stage": "discover",
+      "agent": "product-manager",
+      "kind": "file",
+      "src": "PRD.md",
+      "src_patch": "PRD.patch.json",
+      "dst": "docs/product/PRD.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Problem",
+        "Goals",
+        "Non-goals",
+        "Success",
+        "Success metrics",
+        "Scope",
+        "Risks",
+        "Open questions"
+      ]
+    },
+    {
+      "stage": "discover",
+      "agent": "product-manager",
+      "kind": "file",
+      "src": "STORY_MAP.md",
+      "src_patch": "STORY_MAP.patch.json",
+      "dst": "docs/product/STORY_MAP.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Vision",
+        "Backbone",
+        "Launch",
+        "US-",
+        "P0",
+        "P1",
+        "P2"
+      ]
+    },
+    {
+      "stage": "discover",
+      "agent": "product-manager",
+      "kind": "file",
+      "src": "REQUIREMENTS_BASELINE.md",
+      "src_patch": "REQUIREMENTS_BASELINE.patch.json",
+      "dst": "docs/product/REQUIREMENTS_BASELINE.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Raw input",
+        "Interpretation",
+        "In scope",
+        "Out of scope",
+        "Non-negotiables",
+        "Quality bar",
+        "Assumptions"
+      ]
+    },
+    {
+      "stage": "discover",
+      "agent": "product-manager",
+      "kind": "file",
+      "src": "MARKET_BENCHMARK.md",
+      "src_patch": "MARKET_BENCHMARK.patch.json",
+      "dst": "docs/product/MARKET_BENCHMARK.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Comparable products",
+        "Feature parity and gaps",
+        "Quality bar",
+        "Sources"
+      ]
+    },
+    {
+      "stage": "discover",
+      "agent": "ux-researcher",
+      "kind": "file",
+      "src": "INSIGHTS.md",
+      "src_patch": "INSIGHTS.patch.json",
+      "dst": "docs/ux/INSIGHTS.md",
+      "required": false,
+      "headings": [
+        "Inputs",
+        "Findings",
+        "Evidence",
+        "Implications"
+      ]
+    },
+    {
+      "stage": "ux",
+      "agent": "ux-designer",
+      "kind": "file",
+      "src": "DESIGN_SYSTEM.md",
+      "src_patch": "DESIGN_SYSTEM.patch.json",
+      "dst": "docs/ux/DESIGN_SYSTEM.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Material",
+        "Design tokens",
+        "Theme",
+        "Color roles",
+        "Typography",
+        "Components"
+      ]
+    },
+    {
+      "stage": "ux",
+      "agent": "ux-designer",
+      "kind": "file",
+      "src": "design_tokens.json",
+      "dst": "docs/ux/design_tokens.json",
+      "required": true,
+      "headings": []
+    },
+    {
+      "stage": "ux",
+      "agent": "ux-designer",
+      "kind": "file",
+      "src": "UX_CONTRACT.md",
+      "src_patch": "UX_CONTRACT.patch.json",
+      "dst": "docs/ux/UX_CONTRACT.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Scope",
+        "Competitive bar",
+        "Non-negotiables",
+        "Quality bar",
+        "Performance",
+        "Heuristic acceptance criteria",
+        "Evidence",
+        "Change control"
+      ]
+    },
+    {
+      "stage": "ux",
+      "agent": "ux-designer",
+      "kind": "file",
+      "src": "UI_STATES.md",
+      "src_patch": "UI_STATES.patch.json",
+      "dst": "docs/ux/UI_STATES.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Loading",
+        "Empty",
+        "Error",
+        "Validation",
+        "Success"
+      ]
+    },
+    {
+      "stage": "ux",
+      "agent": "ux-designer",
+      "kind": "file",
+      "src": "UX_SPEC.md",
+      "src_patch": "UX_SPEC.patch.json",
+      "dst": "docs/ux/UX_SPEC.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Scope",
+        "Entry points",
+        "Primary flows",
+        "Edge cases",
+        "Screens & routes",
+        "Components",
+        "UI states",
+        "Instrumentation",
+        "Validation plan",
+        "Open questions"
+      ]
+    },
+    {
+      "stage": "ux",
+      "agent": "ux-designer",
+      "kind": "file",
+      "src": "IA_MAP.md",
+      "src_patch": "IA_MAP.patch.json",
+      "dst": "docs/ux/IA_MAP.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Sitemap",
+        "Routes",
+        "Key flows",
+        "Notes"
+      ]
+    },
+    {
+      "stage": "ux",
+      "agent": "ux-designer",
+      "kind": "file",
+      "src": "COPY.md",
+      "src_patch": "COPY.patch.json",
+      "dst": "docs/ux/COPY.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Tone & voice",
+        "UI copy",
+        "Error messages",
+        "Glossary"
+      ]
+    },
+    {
+      "stage": "ux",
+      "agent": "ux-designer",
+      "kind": "file",
+      "src": "UX_REPORT.md",
+      "src_patch": "UX_REPORT.patch.json",
+      "dst": "docs/ux/UX_REPORT.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Summary",
+        "Decisions",
+        "Open questions"
+      ]
+    },
+    {
+      "stage": "bdd",
+      "agent": "qa-bdd",
+      "kind": "features_merge",
+      "src": "features.json",
+      "dst": "features.json",
+      "required": true,
+      "headings": []
+    },
+    {
+      "stage": "bdd",
+      "agent": "qa-bdd",
+      "kind": "file",
+      "src": "TRACEABILITY.json",
+      "dst": "specs/bdd/TRACEABILITY.json",
+      "required": true,
+      "headings": []
+    },
+    {
+      "stage": "bdd",
+      "agent": "qa-bdd",
+      "kind": "file",
+      "src": "TRACEABILITY.md",
+      "src_patch": "TRACEABILITY.patch.json",
+      "dst": "specs/bdd/TRACEABILITY.md",
+      "required": false,
+      "headings": [
+        "Inputs",
+        "Traceability",
+        "US-",
+        "@F"
+      ]
+    },
+    {
+      "stage": "bdd",
+      "agent": "qa-bdd",
+      "kind": "glob_latest_attempt",
+      "glob": "*.feature",
+      "dst_dir": "specs/bdd",
+      "required": true,
+      "headings": []
+    },
+    {
+      "stage": "arch",
+      "agent": "architect",
+      "kind": "file",
+      "src": "ARCHITECTURE.md",
+      "src_patch": "ARCHITECTURE.patch.json",
+      "dst": "docs/engineering/ARCHITECTURE.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Overview",
+        "Components",
+        "Trade-offs",
+        "Observability",
+        "Security"
+      ]
+    },
+    {
+      "stage": "arch",
+      "agent": "architect",
+      "kind": "file",
+      "src": "API.md",
+      "src_patch": "API.patch.json",
+      "dst": "docs/engineering/API.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Authentication",
+        "Endpoints",
+        "Errors",
+        "Examples"
+      ]
+    },
+    {
+      "stage": "arch",
+      "agent": "architect",
+      "kind": "file",
+      "src": "DATA_MODEL.md",
+      "src_patch": "DATA_MODEL.patch.json",
+      "dst": "docs/engineering/DATA_MODEL.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Entities",
+        "Relations",
+        "Migrations"
+      ]
+    },
+    {
+      "stage": "arch",
+      "agent": "architect",
+      "kind": "file",
+      "src": "RISK_REGISTER.md",
+      "src_patch": "RISK_REGISTER.patch.json",
+      "dst": "docs/engineering/RISK_REGISTER.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Risk",
+        "Likelihood",
+        "Impact",
+        "Mitigation"
+      ]
+    },
+    {
+      "stage": "arch",
+      "agent": "architect",
+      "kind": "glob_latest_attempt",
+      "glob": "ADR-*.md",
+      "dst_dir": "docs/adr",
+      "required": false,
+      "headings": []
+    },
+    {
+      "stage": "arch",
+      "agent": "architect",
+      "kind": "file",
+      "src": "THREAT_MODEL.md",
+      "src_patch": "THREAT_MODEL.patch.json",
+      "dst": "docs/engineering/THREAT_MODEL.md",
+      "required": false,
+      "headings": [
+        "Inputs",
+        "Assets",
+        "Trust boundaries",
+        "Entry points",
+        "Threats",
+        "Mitigations",
+        "Verification"
+      ]
+    },
+    {
+      "stage": "arch",
+      "agent": "architect",
+      "kind": "file",
+      "src": "SECURITY_REVIEW.md",
+      "src_patch": "SECURITY_REVIEW.patch.json",
+      "dst": "docs/engineering/SECURITY_REVIEW.md",
+      "required": false,
+      "headings": [
+        "Inputs",
+        "Auth",
+        "Input validation",
+        "Secrets",
+        "Abuse cases",
+        "Recommendations"
+      ]
+    },
+    {
+      "stage": "arch",
+      "agent": "architect",
+      "kind": "file",
+      "src": "OPERABILITY.md",
+      "src_patch": "OPERABILITY.patch.json",
+      "dst": "docs/engineering/OPERABILITY.md",
+      "required": false,
+      "headings": [
+        "Inputs",
+        "SLO",
+        "SLI",
+        "Alerting",
+        "Runbook",
+        "Backups",
+        "Deployment"
+      ]
+    },
+    {
+      "stage": "plan",
+      "agent": "tech-lead",
+      "kind": "file",
+      "src": "plan.md",
+      "src_patch": "plan.patch.json",
+      "dst": "plan.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Milestones",
+        "Critical path",
+        "Definition of Done",
+        "Risks",
+        "Test strategy"
+      ]
+    },
+    {
+      "stage": "quality",
+      "agent": "quality-auditor",
+      "kind": "file",
+      "src": "QUALITY_AUDIT.md",
+      "src_patch": "QUALITY_AUDIT.patch.json",
+      "dst": "docs/release/QUALITY_AUDIT.md",
+      "required": false,
+      "headings": [
+        "Inputs",
+        "Summary",
+        "Findings",
+        "Actions"
+      ]
+    },
+    {
+      "stage": "quality",
+      "agent": "quality-auditor",
+      "kind": "file",
+      "src": "HANDOFF.md",
+      "src_patch": "HANDOFF.patch.json",
+      "dst": "HANDOFF.md",
+      "required": false,
+      "headings": [
+        "Inputs",
+        "Start",
+        "URLs",
+        "Test"
+      ]
+    },
+    {
+      "stage": "release",
+      "agent": "quality-auditor",
+      "kind": "file",
+      "src": "QUALITY_AUDIT.md",
+      "src_patch": "QUALITY_AUDIT.patch.json",
+      "dst": "docs/release/QUALITY_AUDIT.md",
+      "required": false,
+      "headings": [
+        "Inputs",
+        "Summary",
+        "Findings",
+        "Actions"
+      ]
+    },
+    {
+      "stage": "release",
+      "agent": "quality-auditor",
+      "kind": "file",
+      "src": "HANDOFF.md",
+      "src_patch": "HANDOFF.patch.json",
+      "dst": "HANDOFF.md",
+      "required": true,
+      "headings": [
+        "Inputs",
+        "Start",
+        "URLs",
+        "Test"
+      ]
+    },
+    {
+      "stage": "plan",
+      "agent": "tech-lead",
+      "kind": "file",
+      "src": "plan.json",
+      "dst": "plan.json",
+      "required": true
+    }
+  ],
+  "traceability_gate": {
+    "enabled_from_stage": "bdd",
+    "require_traceability_yaml": true,
+    "require_feature_tags": true,
+    "require_launch_coverage": true,
+    "require_p0_coverage": false,
+    "launch_scope_source": "docs/product/STORY_MAP.md#Launch"
+  },
+  "stage_inputs": {
+    "discover": [
+      "docs/DOC_CONTRACT.md",
+      "(user prompt: captured in run context)"
+    ],
+    "ux": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "docs/product/PRD.md",
+      "(optional) docs/product/PERSONAS.md",
+      "(optional) docs/product/USER_STORIES.md",
+      "(optional) docs/ux/INSIGHTS.md",
+      "(optional) docs/ux/RISKS_AND_ASSUMPTIONS.md"
+    ],
+    "bdd": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "(optional) docs/product/USER_STORIES.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/UI_STATES.md",
+      "docs/ux/COPY.md"
+    ],
+    "arch": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "specs/bdd/BDD_INDEX.json"
+    ],
+    "plan": [
+      "docs/product/REQUIREMENTS_BASELINE.md",
+      "docs/product/MARKET_BENCHMARK.md",
+      "docs/product/STORY_MAP.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/UX_REPORT.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/UI_STATES.md",
+      "docs/ux/COPY.md",
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md",
+      "specs/bdd/BDD_INDEX.json"
+    ],
+    "build": [
+      "plan.json",
+      "features.json",
+      "(optional) specs/bdd/BDD_INDEX.json",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/design_tokens.json",
+      "docs/ux/UI_STATES.md",
+      "(optional) docs/ux/UX_DIGEST.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/COPY.md",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md"
+    ],
+    "test": [
+      "features.json",
+      "specs/bdd/TRACEABILITY.json",
+      "docs/engineering/ARCHITECTURE.md",
+      "docs/engineering/API.md",
+      "docs/engineering/DATA_MODEL.md",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/ux/DESIGN_SYSTEM.md",
+      "docs/ux/design_tokens.json",
+      "docs/ux/UI_STATES.md",
+      "(optional) docs/ux/UX_DIGEST.md",
+      "docs/ux/UX_SPEC.md",
+      "docs/ux/IA_MAP.md",
+      "docs/ux/COPY.md"
+    ],
+    "release": [
+      "features.json",
+      "docs/ux/UX_CONTRACT.md",
+      "docs/operations/RUNBOOK.md",
+      "docs/operations/RELEASE_NOTES.md",
+      "(evidence) HANDOFF.md (project root)",
+      "(evidence) QUALITY_AUDIT.md (quality-auditor run)"
+    ],
+    "quality": [
+      "features.json",
+      "(optional) specs/bdd/BDD_INDEX.json",
+      "docs/engineering/RISK_REGISTER.md",
+      "(optional) docs/engineering/THREAT_MODEL.md",
+      "(optional) docs/engineering/SECURITY_REVIEW.md",
+      "(optional) docs/engineering/OPERABILITY.md",
+      "(optional) docs/adr/ADR_INDEX.json",
+      "docs/** (canonical)",
+      "specs/** (canonical)",
+      "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+    ]
+  },
+  "stage_inputs_by_agent": {
+    "build": {
+      "executor": [
+        "plan.json",
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md",
+        "(optional) docs/ux/UX_DIGEST.md",
+        "docs/ux/UX_SPEC.md",
+        "docs/ux/IA_MAP.md",
+        "docs/ux/COPY.md",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ],
+      "reviewer": [
+        "plan.json",
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ]
+    },
+    "test": {
+      "tester": [
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md",
+        "(optional) docs/ux/UX_DIGEST.md",
+        "docs/ux/UX_SPEC.md",
+        "docs/ux/IA_MAP.md",
+        "docs/ux/COPY.md"
+      ],
+      "ux-validator": [
+        "features.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md"
+      ],
+      "ux-judge": [
+        "features.json",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "docs/ux/design_tokens.json",
+        "docs/ux/UI_STATES.md"
+      ]
+    },
+    "quality": {
+      "*": [
+        "features.json",
+        "docs/engineering/RISK_REGISTER.md",
+        "(optional) docs/engineering/THREAT_MODEL.md",
+        "(optional) docs/engineering/SECURITY_REVIEW.md",
+        "(optional) docs/engineering/OPERABILITY.md",
+        "(optional) docs/adr/ADR_INDEX.json",
+        "docs/** (canonical)",
+        "specs/** (canonical)",
+        "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+      ],
+      "quality-auditor": [
+        "features.json",
+        "(optional) specs/bdd/BDD_INDEX.json",
+        "docs/engineering/RISK_REGISTER.md",
+        "(optional) docs/engineering/THREAT_MODEL.md",
+        "(optional) docs/engineering/SECURITY_REVIEW.md",
+        "(optional) docs/engineering/OPERABILITY.md",
+        "(optional) docs/adr/ADR_INDEX.json",
+        "(optional) .claude/state/system_e2e/system_e2e_latest.json"
+      ]
+    },
+    "arch": {
+      "architect": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json"
+      ],
+      "security-architect": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json"
+      ]
+    },
+    "plan": {
+      "tech-lead": [
+        "docs/product/REQUIREMENTS_BASELINE.md",
+        "docs/product/MARKET_BENCHMARK.md",
+        "docs/product/STORY_MAP.md",
+        "docs/ux/UX_CONTRACT.md",
+        "docs/ux/DESIGN_SYSTEM.md",
+        "features.json",
+        "specs/bdd/TRACEABILITY.json",
+        "specs/bdd/BDD_INDEX.json",
+        "docs/engineering/ARCHITECTURE.md",
+        "docs/engineering/API.md",
+        "docs/engineering/DATA_MODEL.md"
+      ]
+    }
+  }
+}
+```
+
+---
+
+## Notes
+
+- If you change this contract, you must also re-run `/agi-quality` to ensure the pipeline remains coherent.
+- Agents should treat this contract as governance: update only with intent.

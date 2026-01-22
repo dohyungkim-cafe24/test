@@ -1,0 +1,75 @@
+# UX Spec — TEMPLATE
+
+> Owner: ux-designer
+> Status: TEMPLATE
+> Updated: YYYY-MM-DD
+>
+> **IMPORTANT:** Remove the word **TEMPLATE** from the title when publishing a real version.
+>
+> Tip: annotate feature-scoped requirements with tokens like `@F###` so downstream tooling can extract a deterministic per-feature UX packet.
+
+## Inputs
+
+- docs/product/PRD.md
+- docs/product/REQUIREMENTS_BASELINE.md
+- docs/product/STORY_MAP.md (Launch scope)
+- docs/ux/UX_CONTRACT.md
+- docs/ux/DESIGN_SYSTEM.md
+
+---
+
+## Scope
+
+PLACEHOLDER
+
+## Entry points
+
+List how users enter the experience (routes, deep links, navigation paths).
+
+PLACEHOLDER
+
+## Primary flows
+
+Describe end-to-end primary user flows.
+
+PLACEHOLDER
+
+## Edge cases
+
+Enumerate edge cases and how the UX behaves.
+
+PLACEHOLDER
+
+## Screens & routes
+
+Define screens, routes, and key UI regions.
+
+PLACEHOLDER
+
+## Components
+
+List key components and their behavior.
+
+PLACEHOLDER
+
+## UI states
+
+Define required states per screen/component (Loading/Empty/Error/Success/Validation).
+
+PLACEHOLDER
+
+## Instrumentation
+
+Define events, analytics, and observability requirements.
+
+PLACEHOLDER
+
+## Validation plan
+
+Define how UX will be validated (test plan, evidence expectations).
+
+PLACEHOLDER
+
+## Open questions
+
+PLACEHOLDER

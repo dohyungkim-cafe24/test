@@ -1,0 +1,9 @@
+# gate: ui_smoke
+# utc: 20260122T083214834512Z
+# stage: release
+# run: 20260122-032638-b99ba0
+# cmd: bash .claude/scripts/ui_smoke.sh --project /Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics
+
+UI_SMOKE_SKIP: no smoke policy; package.json not found · log: projects/punch-analytics/.claude/state/ui_smoke/ui_smoke_20260122T083215Z.log
+
+# exit_code: 0

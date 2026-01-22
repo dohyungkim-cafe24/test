@@ -1,0 +1,11 @@
+{
+  "attempt_id": "20260121T141017Z-80dd",
+  "created": "2026-01-21 23:10:17",
+  "agent": "qa-bdd",
+  "label": "bdd-patch",
+  "run_id": "",
+  "scratch_dir": "scratch",
+  "deliverables_dir": "deliverables",
+  "evidence_dir": "evidence",
+  "sealed": false
+}

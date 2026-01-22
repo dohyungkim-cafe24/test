@@ -1,0 +1,293 @@
+"""OAuth service for handling authentication with Kakao and Google."""
+import hashlib
+import secrets
+from datetime import datetime, timedelta, timezone
+from typing import Any, Optional
+from urllib.parse import urlencode
+
+import httpx
+from jose import JWTError, jwt
+
+from api.config import Settings, get_settings
+from api.services import state_store
+
+
+class OAuthService:
+    """Service for OAuth authentication flows."""
+
+    # OAuth endpoints
+    KAKAO_AUTH_URL = "https://kauth.kakao.com/oauth/authorize"
+    KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
+    KAKAO_USER_URL = "https://kapi.kakao.com/v2/user/me"
+
+    GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+    GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+    GOOGLE_USER_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+
+    def __init__(self, settings: Optional[Settings] = None):
+        """Initialize OAuth service with settings."""
+        self.settings = settings or get_settings()
+
+    async def generate_state(self, redirect_path: Optional[str] = None) -> str:
+        """Generate and store CSRF state token with optional redirect path.
+
+        Uses server-side storage (Redis or memory) for CSRF validation.
+
+        Args:
+            redirect_path: Optional path to redirect to after auth.
+
+        Returns:
+            State token string, optionally with redirect path appended.
+        """
+        return await state_store.store_state(redirect_path)
+
+    async def validate_state(self, state: str) -> tuple[bool, Optional[str]]:
+        """Validate CSRF state token against server-side storage.
+
+        Consumes the token (single-use).
+
+        Args:
+            state: The state string from callback.
+
+        Returns:
+            Tuple of (is_valid, redirect_path or None).
+        """
+        return await state_store.validate_state(state)
+
+    def parse_state(self, state: str) -> tuple[str, Optional[str]]:
+        """Parse state token to extract CSRF token and redirect path.
+
+        Note: For validation, use validate_state() instead.
+
+        Args:
+            state: The state string from callback.
+
+        Returns:
+            Tuple of (csrf_token, redirect_path or None).
+        """
+        parts = state.split("|", 1)
+        csrf_token = parts[0]
+        redirect_path = parts[1] if len(parts) > 1 else None
+        return csrf_token, redirect_path
+
+    async def get_kakao_auth_url(self, redirect_uri: Optional[str] = None) -> str:
+        """Get Kakao authorization URL.
+
+        Args:
+            redirect_uri: Optional custom redirect URI.
+
+        Returns:
+            Full authorization URL with query parameters.
+        """
+        state = await self.generate_state(redirect_uri)
+        params = {
+            "client_id": self.settings.kakao_client_id,
+            "redirect_uri": self.settings.kakao_redirect_uri,
+            "response_type": "code",
+            "scope": "account_email profile_nickname profile_image",
+            "state": state,
+        }
+        return f"{self.KAKAO_AUTH_URL}?{urlencode(params)}"
+
+    async def get_google_auth_url(self, redirect_uri: Optional[str] = None) -> str:
+        """Get Google authorization URL.
+
+        Args:
+            redirect_uri: Optional custom redirect URI.
+
+        Returns:
+            Full authorization URL with query parameters.
+        """
+        state = await self.generate_state(redirect_uri)
+        params = {
+            "client_id": self.settings.google_client_id,
+            "redirect_uri": self.settings.google_redirect_uri,
+            "response_type": "code",
+            "scope": "openid email profile",
+            "access_type": "offline",
+            "prompt": "consent",
+            "state": state,
+        }
+        return f"{self.GOOGLE_AUTH_URL}?{urlencode(params)}"
+
+    async def exchange_kakao_code(self, code: str) -> dict[str, Any]:
+        """Exchange Kakao authorization code for tokens.
+
+        Args:
+            code: Authorization code from Kakao callback.
+
+        Returns:
+            Token response dictionary.
+
+        Raises:
+            ValueError: If code exchange fails.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.KAKAO_TOKEN_URL,
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": self.settings.kakao_client_id,
+                    "client_secret": self.settings.kakao_client_secret,
+                    "redirect_uri": self.settings.kakao_redirect_uri,
+                    "code": code,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+
+            if response.status_code != 200:
+                raise ValueError(f"Kakao token exchange failed: {response.text}")
+
+            return response.json()
+
+    async def get_kakao_user(self, access_token: str) -> dict[str, Any]:
+        """Get Kakao user profile.
+
+        Args:
+            access_token: Kakao access token.
+
+        Returns:
+            User profile dictionary.
+
+        Raises:
+            ValueError: If user fetch fails.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                self.KAKAO_USER_URL,
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+
+            if response.status_code != 200:
+                raise ValueError(f"Kakao user fetch failed: {response.text}")
+
+            return response.json()
+
+    async def exchange_google_code(self, code: str) -> dict[str, Any]:
+        """Exchange Google authorization code for tokens.
+
+        Args:
+            code: Authorization code from Google callback.
+
+        Returns:
+            Token response dictionary.
+
+        Raises:
+            ValueError: If code exchange fails.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.GOOGLE_TOKEN_URL,
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": self.settings.google_client_id,
+                    "client_secret": self.settings.google_client_secret,
+                    "redirect_uri": self.settings.google_redirect_uri,
+                    "code": code,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+
+            if response.status_code != 200:
+                raise ValueError(f"Google token exchange failed: {response.text}")
+
+            return response.json()
+
+    async def get_google_user(self, access_token: str) -> dict[str, Any]:
+        """Get Google user profile.
+
+        Args:
+            access_token: Google access token.
+
+        Returns:
+            User profile dictionary.
+
+        Raises:
+            ValueError: If user fetch fails.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                self.GOOGLE_USER_URL,
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+
+            if response.status_code != 200:
+                raise ValueError(f"Google user fetch failed: {response.text}")
+
+            return response.json()
+
+    def create_access_token(
+        self,
+        user_id: str,
+        email: str,
+        expires_delta: Optional[timedelta] = None,
+    ) -> str:
+        """Create JWT access token.
+
+        Args:
+            user_id: User identifier.
+            email: User email.
+            expires_delta: Optional custom expiry duration.
+
+        Returns:
+            Encoded JWT token string.
+        """
+        if expires_delta is None:
+            expires_delta = timedelta(minutes=self.settings.access_token_expire_minutes)
+
+        expire = datetime.now(timezone.utc) + expires_delta
+
+        to_encode = {
+            "sub": user_id,
+            "email": email,
+            "exp": expire,
+            "iat": datetime.now(timezone.utc),
+            "type": "access",
+        }
+
+        return jwt.encode(to_encode, self.settings.secret_key, algorithm="HS256")
+
+    def create_refresh_token(self) -> tuple[str, str, datetime]:
+        """Create refresh token and its hash.
+
+        Returns:
+            Tuple of (raw_token, token_hash, expires_at).
+        """
+        raw_token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            days=self.settings.refresh_token_expire_days
+        )
+        return raw_token, token_hash, expires_at
+
+    def verify_access_token(self, token: str) -> dict[str, Any]:
+        """Verify and decode JWT access token.
+
+        Args:
+            token: JWT token string.
+
+        Returns:
+            Decoded token payload.
+
+        Raises:
+            ValueError: If token is invalid or expired.
+        """
+        try:
+            payload = jwt.decode(token, self.settings.secret_key, algorithms=["HS256"])
+            if payload.get("type") != "access":
+                raise ValueError("Invalid token type")
+            return payload
+        except JWTError as e:
+            raise ValueError(f"Invalid token: {e}")
+
+
+    def hash_refresh_token(self, token: str) -> str:
+        """Hash a refresh token for storage.
+
+        Args:
+            token: Raw refresh token.
+
+        Returns:
+            SHA-256 hash of token.
+        """
+        return hashlib.sha256(token.encode()).hexdigest()

@@ -1,0 +1,11 @@
+{
+  "attempt_id": "20260121T133019Z-0c0a",
+  "created": "2026-01-21 22:30:19",
+  "agent": "executor",
+  "label": "impl",
+  "run_id": "20260121-133019-5ac413",
+  "scratch_dir": "scratch",
+  "deliverables_dir": "deliverables",
+  "evidence_dir": "evidence",
+  "sealed": false
+}

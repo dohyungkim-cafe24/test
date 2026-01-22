@@ -1,0 +1,296 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "description": "PunchAnalytics Design Tokens - Material Design 3 based",
+  "tokens": {
+    "colors": {
+      "primary": "#1565C0",
+      "onPrimary": "#FFFFFF",
+      "primaryContainer": "#D1E4FF",
+      "onPrimaryContainer": "#001D36",
+      "primaryDark": "#A8C7FA",
+      "onPrimaryDark": "#062E6F",
+      "secondary": "#625B71",
+      "onSecondary": "#FFFFFF",
+      "secondaryContainer": "#E8DEF8",
+      "onSecondaryContainer": "#1D192B",
+      "tertiary": "#7D5260",
+      "onTertiary": "#FFFFFF",
+      "tertiaryContainer": "#FFD8E4",
+      "onTertiaryContainer": "#31111D",
+      "surface": "#FEFBFF",
+      "onSurface": "#1C1B1F",
+      "surfaceVariant": "#E7E0EC",
+      "onSurfaceVariant": "#49454F",
+      "surfaceDark": "#1C1B1F",
+      "onSurfaceDark": "#E6E1E5",
+      "outline": "#79747E",
+      "outlineVariant": "#CAC4D0",
+      "inverseSurface": "#313033",
+      "inverseOnSurface": "#F4EFF4",
+      "inversePrimary": "#A8C7FA",
+      "error": "#B3261E",
+      "onError": "#FFFFFF",
+      "errorContainer": "#F9DEDC",
+      "onErrorContainer": "#410E0B",
+      "success": "#2E7D32",
+      "onSuccess": "#FFFFFF",
+      "successContainer": "#C8E6C9",
+      "onSuccessContainer": "#1B5E20",
+      "warning": "#ED6C02",
+      "onWarning": "#FFFFFF",
+      "warningContainer": "#FFE0B2",
+      "onWarningContainer": "#E65100",
+      "info": "#0288D1",
+      "onInfo": "#FFFFFF",
+      "infoContainer": "#B3E5FC",
+      "onInfoContainer": "#01579B",
+      "scrim": "rgba(0, 0, 0, 0.32)",
+      "shadow": "rgba(0, 0, 0, 0.15)",
+      "boxing": {
+        "strike": "#E53935",
+        "onStrike": "#FFFFFF",
+        "defense": "#1976D2",
+        "onDefense": "#FFFFFF",
+        "movement": "#7B1FA2",
+        "onMovement": "#FFFFFF",
+        "strength": "#2E7D32",
+        "weakness": "#ED6C02"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "primary": "'Roboto', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "mono": "'Roboto Mono', 'Consolas', monospace"
+      },
+      "displayLarge": {
+        "fontSize": "57px",
+        "fontWeight": 400,
+        "lineHeight": "64px",
+        "letterSpacing": "-0.25px"
+      },
+      "displayMedium": {
+        "fontSize": "45px",
+        "fontWeight": 400,
+        "lineHeight": "52px",
+        "letterSpacing": "0px"
+      },
+      "displaySmall": {
+        "fontSize": "36px",
+        "fontWeight": 400,
+        "lineHeight": "44px",
+        "letterSpacing": "0px"
+      },
+      "headlineLarge": {
+        "fontSize": "32px",
+        "fontWeight": 400,
+        "lineHeight": "40px",
+        "letterSpacing": "0px"
+      },
+      "headlineMedium": {
+        "fontSize": "28px",
+        "fontWeight": 400,
+        "lineHeight": "36px",
+        "letterSpacing": "0px"
+      },
+      "headlineSmall": {
+        "fontSize": "24px",
+        "fontWeight": 400,
+        "lineHeight": "32px",
+        "letterSpacing": "0px"
+      },
+      "titleLarge": {
+        "fontSize": "22px",
+        "fontWeight": 400,
+        "lineHeight": "28px",
+        "letterSpacing": "0px"
+      },
+      "titleMedium": {
+        "fontSize": "16px",
+        "fontWeight": 500,
+        "lineHeight": "24px",
+        "letterSpacing": "0.15px"
+      },
+      "titleSmall": {
+        "fontSize": "14px",
+        "fontWeight": 500,
+        "lineHeight": "20px",
+        "letterSpacing": "0.1px"
+      },
+      "bodyLarge": {
+        "fontSize": "16px",
+        "fontWeight": 400,
+        "lineHeight": "24px",
+        "letterSpacing": "0.5px"
+      },
+      "bodyMedium": {
+        "fontSize": "14px",
+        "fontWeight": 400,
+        "lineHeight": "20px",
+        "letterSpacing": "0.25px"
+      },
+      "bodySmall": {
+        "fontSize": "12px",
+        "fontWeight": 400,
+        "lineHeight": "16px",
+        "letterSpacing": "0.4px"
+      },
+      "labelLarge": {
+        "fontSize": "14px",
+        "fontWeight": 500,
+        "lineHeight": "20px",
+        "letterSpacing": "0.1px"
+      },
+      "labelMedium": {
+        "fontSize": "12px",
+        "fontWeight": 500,
+        "lineHeight": "16px",
+        "letterSpacing": "0.5px"
+      },
+      "labelSmall": {
+        "fontSize": "11px",
+        "fontWeight": 500,
+        "lineHeight": "16px",
+        "letterSpacing": "0.5px"
+      }
+    },
+    "spacing": {
+      "none": "0px",
+      "xxs": "2px",
+      "xs": "4px",
+      "sm": "8px",
+      "md": "12px",
+      "base": "16px",
+      "lg": "20px",
+      "xl": "24px",
+      "xxl": "32px",
+      "xxxl": "40px",
+      "xxxxl": "48px",
+      "section": "64px"
+    },
+    "radius": {
+      "none": "0px",
+      "xs": "4px",
+      "small": "8px",
+      "medium": "12px",
+      "large": "16px",
+      "extraLarge": "28px",
+      "full": "9999px"
+    },
+    "elevation": {
+      "level0": {
+        "boxShadow": "none"
+      },
+      "level1": {
+        "boxShadow": "0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)"
+      },
+      "level2": {
+        "boxShadow": "0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)"
+      },
+      "level3": {
+        "boxShadow": "0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3)"
+      },
+      "level4": {
+        "boxShadow": "0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px rgba(0, 0, 0, 0.3)"
+      },
+      "level5": {
+        "boxShadow": "0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px rgba(0, 0, 0, 0.3)"
+      }
+    },
+    "motion": {
+      "duration": {
+        "instant": "0ms",
+        "fast": "100ms",
+        "normal": "200ms",
+        "slow": "300ms",
+        "slower": "400ms",
+        "slowest": "500ms"
+      },
+      "easing": {
+        "standard": "cubic-bezier(0.2, 0, 0, 1)",
+        "standardAccelerate": "cubic-bezier(0.3, 0, 1, 1)",
+        "standardDecelerate": "cubic-bezier(0, 0, 0, 1)",
+        "emphasized": "cubic-bezier(0.2, 0, 0, 1)",
+        "emphasizedAccelerate": "cubic-bezier(0.3, 0, 0.8, 0.15)",
+        "emphasizedDecelerate": "cubic-bezier(0.05, 0.7, 0.1, 1)"
+      }
+    },
+    "breakpoints": {
+      "mobile": "375px",
+      "tablet": "768px",
+      "desktop": "1280px",
+      "wide": "1440px"
+    },
+    "zIndex": {
+      "dropdown": 1000,
+      "sticky": 1020,
+      "fixed": 1030,
+      "modalBackdrop": 1040,
+      "modal": 1050,
+      "popover": 1060,
+      "tooltip": 1070,
+      "toast": 1080
+    },
+    "components": {
+      "button": {
+        "height": {
+          "small": "32px",
+          "medium": "40px",
+          "large": "48px"
+        },
+        "paddingHorizontal": {
+          "small": "16px",
+          "medium": "24px",
+          "large": "32px"
+        },
+        "borderRadius": "20px",
+        "minWidth": "64px"
+      },
+      "input": {
+        "height": "56px",
+        "borderRadiusTop": "4px",
+        "borderRadiusBottom": "0px"
+      },
+      "card": {
+        "padding": "16px",
+        "borderRadius": "12px"
+      },
+      "appBar": {
+        "height": "64px"
+      },
+      "bottomNav": {
+        "height": "80px"
+      },
+      "dialog": {
+        "borderRadius": "28px",
+        "padding": "24px",
+        "minWidth": "280px",
+        "maxWidth": "560px"
+      },
+      "snackbar": {
+        "borderRadius": "4px",
+        "padding": "14px 16px",
+        "marginBottom": "16px"
+      },
+      "chip": {
+        "height": "32px",
+        "borderRadius": "8px",
+        "paddingHorizontal": "12px"
+      },
+      "thumbnail": {
+        "small": "48px",
+        "medium": "80px",
+        "large": "120px"
+      },
+      "progressLinear": {
+        "height": "4px"
+      },
+      "progressCircular": {
+        "small": "24px",
+        "medium": "48px",
+        "large": "64px",
+        "strokeWidth": "4px"
+      }
+    }
+  }
+}

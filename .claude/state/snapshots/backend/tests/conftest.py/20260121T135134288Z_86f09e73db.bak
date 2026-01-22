@@ -1,0 +1,98 @@
+"""Test configuration and fixtures for authentication tests."""
+import os
+from typing import AsyncGenerator, Generator
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
+
+# Set test environment variables before importing app
+os.environ.setdefault("ENVIRONMENT", "test")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-do-not-use-in-production")
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
+os.environ.setdefault("KAKAO_CLIENT_ID", "test-kakao-client-id")
+os.environ.setdefault("KAKAO_CLIENT_SECRET", "test-kakao-secret")
+os.environ.setdefault("GOOGLE_CLIENT_ID", "test-google-client-id")
+os.environ.setdefault("GOOGLE_CLIENT_SECRET", "test-google-secret")
+os.environ.setdefault("FRONTEND_URL", "http://localhost:3000")
+
+from api.main import create_app
+
+
+@pytest.fixture
+def app() -> FastAPI:
+    """Create test application instance."""
+    return create_app()
+
+
+@pytest.fixture
+def client(app: FastAPI) -> Generator[TestClient, None, None]:
+    """Create synchronous test client."""
+    with TestClient(app, follow_redirects=False) as c:
+        yield c
+
+
+@pytest.fixture
+async def async_client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
+    """Create async test client."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        yield c
+
+
+@pytest.fixture
+def mock_kakao_oauth_response() -> dict:
+    """Mock successful Kakao OAuth token response."""
+    return {
+        "access_token": "kakao-access-token-123",
+        "token_type": "bearer",
+        "refresh_token": "kakao-refresh-token-456",
+        "expires_in": 21599,
+        "scope": "account_email profile_nickname profile_image",
+        "refresh_token_expires_in": 5183999,
+    }
+
+
+@pytest.fixture
+def mock_kakao_user_response() -> dict:
+    """Mock Kakao user profile response."""
+    return {
+        "id": 12345678,
+        "kakao_account": {
+            "email": "boxer@kakao.com",
+            "profile": {
+                "nickname": "Kim Boxer",
+                "thumbnail_image_url": "https://k.kakaocdn.net/thumb/123.jpg",
+            },
+        },
+    }
+
+
+@pytest.fixture
+def mock_google_oauth_response() -> dict:
+    """Mock successful Google OAuth token response."""
+    return {
+        "access_token": "google-access-token-789",
+        "token_type": "Bearer",
+        "expires_in": 3599,
+        "refresh_token": "google-refresh-token-abc",
+        "scope": "openid email profile",
+        "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    }
+
+
+@pytest.fixture
+def mock_google_user_response() -> dict:
+    """Mock Google user info response."""
+    return {
+        "sub": "109876543210",
+        "email": "boxer@gmail.com",
+        "email_verified": True,
+        "name": "Lee Boxer",
+        "picture": "https://lh3.googleusercontent.com/a/photo.jpg",
+        "given_name": "Lee",
+        "family_name": "Boxer",
+    }

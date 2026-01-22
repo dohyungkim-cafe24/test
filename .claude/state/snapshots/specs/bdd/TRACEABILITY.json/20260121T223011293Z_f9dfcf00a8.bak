@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "generated_by": "traceability_generate.py",
+  "source": "bdd_index",
+  "traceability": [
+    {
+      "user_story": "US-001",
+      "feature": "F001",
+      "gherkin_file": "specs/bdd/auth.feature",
+      "scenarios": [
+        "OAuth login cancelled by user",
+        "OAuth provider unavailable",
+        "Session expiration prompts re-authentication",
+        "Successful Google OAuth login",
+        "Successful Kakao OAuth login",
+        "Unauthenticated user redirected to login",
+        "User logs out successfully"
+      ]
+    },
+    {
+      "user_story": "US-002",
+      "feature": "F002",
+      "gherkin_file": "specs/bdd/upload.feature",
+      "scenarios": [
+        "File exceeds maximum size limit",
+        "Successful video upload with valid file",
+        "Unsupported file format rejected",
+        "Upload area shows empty state initially",
+        "Upload resumes after network interruption",
+        "Upload shows progress indicator",
+        "User cancels upload in progress",
+        "Video duration too long",
+        "Video duration too short"
+      ]
+    },
+    {
+      "user_story": "US-003",
+      "feature": "F003",
+      "gherkin_file": "specs/bdd/subject-selection.feature",
+      "scenarios": [
+        "No subjects detected in video",
+        "Single person auto-selected",
+        "Thumbnail extraction loading state",
+        "Thumbnail grid displays extracted frames",
+        "User changes selection before confirmation",
+        "User confirms subject selection",
+        "User selects subject from thumbnail"
+      ]
+    },
+    {
+      "user_story": "US-004",
+      "feature": "F004",
+      "gherkin_file": "specs/bdd/body-specs.feature",
+      "scenarios": [
+        "All fields required for submission",
+        "Body specs pre-filled for returning user",
+        "Height above maximum shows validation error",
+        "Height below minimum shows validation error",
+        "Invalid number format shows error",
+        "User enters valid body specifications",
+        "Weight above maximum shows validation error",
+        "Weight below minimum shows validation error"
+      ]
+    },
+    {
+      "user_story": "US-005",
+      "feature": "F005",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Pose estimation extracts joint coordinates",
+        "Pose estimation fails with poor video quality",
+        "Processing status shows step progress",
+        "Processing takes longer than expected",
+        "Subject tracking maintains across frames"
+      ]
+    },
+    {
+      "user_story": "US-005",
+      "feature": "F006",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Defensive action detection identifies guards",
+        "No significant actions detected",
+        "Stamps include confidence scores",
+        "Strike detection identifies punch types"
+      ]
+    },
+    {
+      "user_story": "US-005",
+      "feature": "F007",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Analysis adapts to beginner experience level",
+        "Analysis adapts to competitive experience level",
+        "LLM API exhausts retries",
+        "LLM API failure triggers retry",
+        "LLM generates strategic analysis"
+      ]
+    },
+    {
+      "user_story": "US-006",
+      "feature": "F005",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Pose estimation extracts joint coordinates",
+        "Pose estimation fails with poor video quality",
+        "Processing status shows step progress",
+        "Processing takes longer than expected",
+        "Subject tracking maintains across frames"
+      ]
+    },
+    {
+      "user_story": "US-006",
+      "feature": "F006",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Defensive action detection identifies guards",
+        "No significant actions detected",
+        "Stamps include confidence scores",
+        "Strike detection identifies punch types"
+      ]
+    },
+    {
+      "user_story": "US-006",
+      "feature": "F007",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Analysis adapts to beginner experience level",
+        "Analysis adapts to competitive experience level",
+        "LLM API exhausts retries",
+        "LLM API failure triggers retry",
+        "LLM generates strategic analysis"
+      ]
+    },
+    {
+      "user_story": "US-007",
+      "feature": "F005",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Pose estimation extracts joint coordinates",
+        "Pose estimation fails with poor video quality",
+        "Processing status shows step progress",
+        "Processing takes longer than expected",
+        "Subject tracking maintains across frames"
+      ]
+    },
+    {
+      "user_story": "US-007",
+      "feature": "F006",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Defensive action detection identifies guards",
+        "No significant actions detected",
+        "Stamps include confidence scores",
+        "Strike detection identifies punch types"
+      ]
+    },
+    {
+      "user_story": "US-007",
+      "feature": "F007",
+      "gherkin_file": "specs/bdd/processing.feature",
+      "scenarios": [
+        "Analysis adapts to beginner experience level",
+        "Analysis adapts to competitive experience level",
+        "LLM API exhausts retries",
+        "LLM API failure triggers retry",
+        "LLM generates strategic analysis"
+      ]
+    },
+    {
+      "user_story": "US-008",
+      "feature": "F008",
+      "gherkin_file": "specs/bdd/report.feature",
+      "scenarios": [
+        "Report displays correctly on desktop viewport",
+        "Report displays correctly on mobile viewport",
+        "Report displays key moments with timestamps",
+        "Report displays metrics with visualizations",
+        "Report displays recommendations section",
+        "Report displays strengths section",
+        "Report displays summary section",
+        "Report displays weaknesses section",
+        "Report includes AI disclaimer",
+        "Report loads within performance target"
+      ]
+    },
+    {
+      "user_story": "US-009",
+      "feature": "F009",
+      "gherkin_file": "specs/bdd/sharing.feature",
+      "scenarios": [
+        "Disabled share link returns error",
+        "Report shows share button in private state",
+        "Shared report accessible without login",
+        "Shared report displays social preview",
+        "User copies share link to clipboard",
+        "User disables sharing",
+        "User enables sharing and gets unique URL",
+        "User re-enables sharing gets new URL"
+      ]
+    },
+    {
+      "user_story": "US-010",
+      "feature": "F010",
+      "gherkin_file": "specs/bdd/dashboard.feature",
+      "scenarios": [
+        "Dashboard displays report list sorted by date",
+        "Dashboard loading state shows skeletons",
+        "Dashboard shows empty state for new user",
+        "Report list item shows thumbnail and summary",
+        "User deletes report with confirmation",
+        "User navigates to report from list"
+      ]
+    }
+  ]
+}

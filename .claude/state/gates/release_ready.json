@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "required": [
+    "HANDOFF.md",
+    "QUALITY_AUDIT.md",
+    "SYSTEM_E2E"
+  ],
+  "found": {
+    "handoff": "HANDOFF.md",
+    "quality_audit": ".claude/state/runs/20260122-031715-d87790/quality-auditor/attempts/20260122T031715Z-7064-rubric/deliverables/QUALITY_AUDIT.md",
+    "system_e2e": ".claude/state/system_e2e/system_e2e_latest.json",
+    "system_e2e_log": "projects/punch-analytics/.claude/state/system_e2e/system_e2e_20260122T032631Z.log"
+  },
+  "missing": [],
+  "system_e2e_required": true,
+  "project": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics",
+  "project_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics"
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "baseline": "Material Design 3 (M3)",
+  "css": {
+    "selector": ":root",
+    "prefix": "--dt"
+  },
+  "ts": {
+    "export": "designTokens"
+  },
+  "targets": [
+    {
+      "kind": "css",
+      "path": "src/theme/design_tokens.css"
+    },
+    {
+      "kind": "ts",
+      "path": "src/theme/design_tokens.ts"
+    }
+  ],
+  "tokens": {
+    "color": {
+      "primary": "#6750A4",
+      "on_primary": "#FFFFFF",
+      "surface": "#FFFBFE",
+      "on_surface": "#1C1B1F",
+      "error": "#B3261E",
+      "on_error": "#FFFFFF"
+    },
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px"
+    },
+    "radius": {
+      "sm": "4px",
+      "md": "8px",
+      "lg": "12px"
+    },
+    "typography": {
+      "font_family": "Roboto, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "body_md_size": "16px",
+      "body_md_line_height": "24px",
+      "body_md_weight": 400
+    }
+  }
+}

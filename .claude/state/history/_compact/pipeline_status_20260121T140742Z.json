@@ -1,0 +1,66 @@
+{
+  "project": "projects/punch-analytics",
+  "project_dir": "/Users/briankim/Desktop/ai/agi-dev/projects/punch-analytics",
+  "next_stage": "build",
+  "stages": {
+    "discover": {
+      "complete": true,
+      "missing": []
+    },
+    "ux": {
+      "complete": true,
+      "missing": []
+    },
+    "bdd": {
+      "complete": true,
+      "missing": []
+    },
+    "arch": {
+      "complete": true,
+      "missing": []
+    },
+    "plan": {
+      "complete": true,
+      "missing": []
+    }
+  },
+  "features": {
+    "total": 10,
+    "done": 0,
+    "passed": 0,
+    "next": "F001",
+    "progress": "0/10 (0%)"
+  },
+  "release_scope": {
+    "source": "story_map_launch",
+    "launch_user_stories": [
+      "US-001",
+      "US-002",
+      "US-003",
+      "US-004",
+      "US-005",
+      "US-006",
+      "US-007",
+      "US-008",
+      "US-009",
+      "US-010"
+    ],
+    "feature_ids": [
+      "F001",
+      "F002",
+      "F003",
+      "F004",
+      "F005",
+      "F006",
+      "F007",
+      "F008",
+      "F009",
+      "F010"
+    ],
+    "mapping_sources": [
+      "features_json",
+      "gherkin_tags",
+      "traceability"
+    ]
+  }
+}
