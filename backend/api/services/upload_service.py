@@ -231,7 +231,7 @@ class UploadService:
             file_size=upload_session.file_size,
             duration_seconds=upload_session.duration_seconds,
             storage_key=storage_key,
-            upload_status="processing_thumbnails",
+            upload_status="processing",
             upload_completed_at=datetime.now(timezone.utc),
         )
         session.add(video)
