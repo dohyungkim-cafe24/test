@@ -10,48 +10,42 @@ from openai import AsyncOpenAI
 from api.config import get_settings
 
 
-BOXING_ANALYSIS_SYSTEM_PROMPT = """You are an expert boxing coach with decades of experience training fighters at all levels.
-You analyze sparring videos using pose estimation data to provide actionable feedback.
+BOXING_ANALYSIS_SYSTEM_PROMPT = """당신은 수십 년 경력의 전문 복싱 코치입니다.
+포즈 추정 데이터를 분석하여 실질적인 피드백을 제공합니다.
 
-Your analysis should be:
-- Technical but accessible to beginners
-- Encouraging while highlighting areas for improvement
-- Specific with concrete recommendations
-- Safety-conscious (always emphasize proper form to prevent injury)
+분석 원칙:
+- 초보자도 이해할 수 있는 기술적 설명
+- 격려하면서도 개선점을 명확히 제시
+- 구체적이고 실행 가능한 권장사항
+- 부상 예방을 위한 올바른 자세 강조
 
-Respond in JSON format with the following structure:
+반드시 아래 JSON 형식으로 **한국어로만** 응답하세요:
 {
-    "performance_score": <number 1-100>,
-    "overall_assessment": "<2-3 sentence summary in both English and Korean>",
+    "performance_score": <1-100 사이의 점수>,
+    "overall_assessment": "<2-3문장의 종합 평가>",
     "strengths": [
         {
-            "title": "<short title>",
-            "title_ko": "<Korean title>",
-            "description": "<detailed explanation>",
-            "description_ko": "<Korean explanation>"
+            "title": "<강점 제목>",
+            "description": "<상세 설명>"
         }
     ],
     "weaknesses": [
         {
-            "title": "<short title>",
-            "title_ko": "<Korean title>",
-            "description": "<detailed explanation>",
-            "description_ko": "<Korean explanation>"
+            "title": "<개선점 제목>",
+            "description": "<상세 설명>"
         }
     ],
     "recommendations": [
         {
-            "title": "<drill or exercise name>",
-            "title_ko": "<Korean title>",
-            "description": "<how to practice>",
-            "description_ko": "<Korean explanation>",
+            "title": "<훈련 방법 이름>",
+            "description": "<연습 방법 설명>",
             "priority": "<high/medium/low>"
         }
     ]
 }
 
-Provide 3-5 items for each of strengths, weaknesses, and recommendations.
-Always include both English and Korean (_ko suffix) for each text field."""
+strengths, weaknesses, recommendations 각각 3-5개씩 제공하세요.
+모든 텍스트는 한국어로 작성하세요."""
 
 
 class GPTAnalyzer:
@@ -189,32 +183,25 @@ class GPTAnalyzer:
         return {
             "performance_score": 50,
             "overall_assessment": (
-                "Analysis could not be fully completed. Based on the available data, "
-                "continue practicing fundamental techniques and focus on maintaining proper form. "
-                "분석을 완료할 수 없습니다. 기본 기술을 계속 연습하고 올바른 자세를 유지하는 데 집중하세요."
+                "분석을 완료할 수 없습니다. 기본 기술을 계속 연습하고 "
+                "올바른 자세를 유지하는 데 집중하세요."
             ),
             "strengths": [
                 {
-                    "title": "Consistent Practice",
-                    "title_ko": "꾸준한 연습",
-                    "description": "You're actively training and seeking feedback, which is the foundation of improvement.",
-                    "description_ko": "적극적으로 훈련하고 피드백을 구하는 것이 발전의 기본입니다.",
+                    "title": "꾸준한 연습",
+                    "description": "적극적으로 훈련하고 피드백을 구하는 것이 발전의 기본입니다.",
                 }
             ],
             "weaknesses": [
                 {
-                    "title": "Insufficient Data",
-                    "title_ko": "데이터 부족",
-                    "description": "More clear footage would help provide better analysis.",
-                    "description_ko": "더 선명한 영상이 있으면 더 나은 분석을 제공할 수 있습니다.",
+                    "title": "데이터 부족",
+                    "description": "더 선명한 영상이 있으면 더 나은 분석을 제공할 수 있습니다.",
                 }
             ],
             "recommendations": [
                 {
-                    "title": "Shadow Boxing Drills",
-                    "title_ko": "섀도우 복싱 드릴",
-                    "description": "Practice 3 rounds of shadow boxing daily, focusing on form over speed.",
-                    "description_ko": "매일 3라운드의 섀도우 복싱을 연습하고, 속도보다 자세에 집중하세요.",
+                    "title": "섀도우 복싱 드릴",
+                    "description": "매일 3라운드의 섀도우 복싱을 연습하고, 속도보다 자세에 집중하세요.",
                     "priority": "high",
                 }
             ],
